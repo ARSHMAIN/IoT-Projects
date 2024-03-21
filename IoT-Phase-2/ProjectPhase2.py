@@ -1,13 +1,12 @@
 import dash_daq as daq
 from dash import Dash, html, Input, Output, callback
-
-# import RPi.GPIO as GPIO
+import RPi.GPIO as GPIO
 
 app = Dash(__name__)
 
-# GPIO.setmode(GPIO.BCM)
-# LED_PIN = 17
-# GPIO.setup(LED_PIN, GPIO.OUT)
+GPIO.setmode(GPIO.BCM)
+LED_PIN = 17
+GPIO.setup(LED_PIN, GPIO.OUT)
 
 app.layout = html.Div([
     html.Div(
@@ -55,11 +54,11 @@ app.layout = html.Div([
 )
 def update_output(value):
     if value:
-        # GPIO.output(LED_PIN, GPIO.HIGH)
+        GPIO.output(LED_PIN, GPIO.HIGH)
         print('Turn ON on.')
         return 'Turn ON on.', 'blue', 'assets/fan on.png'  # return all output callbacks
     else:
-        # GPIO.output(LED_PIN, GPIO.LOW)
+        GPIO.output(LED_PIN, GPIO.LOW)
         print('Turn OFF fan.')
         return 'Turn OFF fan.', 'none', 'assets/fan off.png'  # return all output callbacks
 
