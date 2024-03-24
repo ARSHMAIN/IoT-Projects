@@ -1,6 +1,10 @@
 import dash_daq as daq
 from dash import Dash, html, Input, Output, callback
 import RPi.GPIO as GPIO
+import Freenove_DHT as DHT
+import time
+
+DHTPin = 11
 
 app = Dash(__name__)
 
@@ -15,12 +19,11 @@ app.layout = html.Div([
     ),
     daq.ToggleSwitch(
         id='email-switch',
-        value=False,  # state of the button
+        value=False,  
     ),
     html.Div(
         id='email-state',
         style={'text-align': 'center', 'margin-top': '20px'}
-
     ),
     daq.Thermometer(
         id='thermometer',
@@ -35,33 +38,51 @@ app.layout = html.Div([
     ),
     html.Img(
         id='fan',
-        src='assets/fan on.png',  # image path
+        src='assets/fan on.png', 
         alt='Fan',
         style={'display': 'block', 'margin': 'auto'}
     ),
+    daq.Gauge(
+        color={"gradient": True, "ranges": {"green": [0, 18], "yellow": [18, 24], "red": [24, 30]}},
+        id='gauge',
+        label="Humidity",
+        value=6,
+        max=30,
+        min=0,
+    ),
 ])
 
+@app.callback(Output('gauge', 'value'), [])
+def update_gauge_value():
+    dht = DHT.DHT(DHTPin)  
+    counts = 0
+    while True:
+        counts += 1
+        print("Measurement counts: ", counts)
+        for i in range(0, 15):
+            chk = dht.readDHT11()
+            if chk is dht.DHTLIB_OK:
+                print("DHT11, OK!")
+                return dht.temperature  
+            time.sleep(0.1)
+        print("Failed to read DHT11 data")
+        time.sleep(2)
 
-# write the variables in the same order
-@callback(
-    # Output callbacks (inside the return)
+@app.callback(
     [Output('email-state', 'children'),
      Output('email-switch', 'color'),
      Output('fan', 'src')],
-
-    # Input callback (inside the function)
     [Input('email-switch', 'value')]
 )
 def update_output(value):
     if value:
         GPIO.output(LED_PIN, GPIO.HIGH)
         print('Turn ON on.')
-        return 'Turn ON on.', 'blue', 'assets/fan on.png'  # return all output callbacks
+        return 'Turn ON on.', 'blue', 'assets/fan on.png' 
     else:
         GPIO.output(LED_PIN, GPIO.LOW)
         print('Turn OFF fan.')
-        return 'Turn OFF fan.', 'none', 'assets/fan off.png'  # return all output callbacks
-
+        return 'Turn OFF fan.', 'none', 'assets/fan off.png'  
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run_server(debug=True)
