@@ -1,16 +1,17 @@
-import dash_daq as daq
-from dash import Dash, html, Input, Output, callback
 import RPi.GPIO as GPIO
-import Freenove_DHT as DHT
 import time
+import Freenove_DHT as DHT
+import dash_daq as daq
+import dash_core_components as dcc
+from dash import Dash, html, Input, Output, callback
 
 DHTPin = 11
 
 app = Dash(__name__)
 
-GPIO.setmode(GPIO.BCM)
-LED_PIN = 17
-GPIO.setup(LED_PIN, GPIO.OUT)
+#GPIO.setmode(GPIO.BCM)
+#LED_PIN = 17
+#GPIO.setup(LED_PIN, GPIO.OUT)
 
 app.layout = html.Div([
     html.Div(
@@ -26,14 +27,14 @@ app.layout = html.Div([
         style={'text-align': 'center', 'margin-top': '20px'}
     ),
     daq.Thermometer(
-        id='thermometer',
-        label='Current Temperature',
+        id='temperature-gauge',
+        label='Temperature',
         labelPosition='top',
         showCurrentValue=True,
         units="C",
         value=6,
         min=-30,
-        max=30,
+        max=40,
         style={'margin-bottom': '5%'}
     ),
     html.Img(
@@ -44,31 +45,39 @@ app.layout = html.Div([
     ),
     daq.Gauge(
         color={"gradient": True, "ranges": {"green": [0, 18], "yellow": [18, 24], "red": [24, 30]}},
-        id='gauge',
+        id='humidity-gauge',
         label="Humidity",
         value=6,
-        max=30,
+        max=50,
         min=0,
     ),
+    dcc.Interval(
+        id='interval-component',
+        interval=2000,  # Update every 2 seconds
+        n_intervals=0
+    ),
 ])
+@callback(
+    [Output('temperature-gauge', 'value'), Output('humidity-gauge', 'value')],
+    Input('interval-component', 'n_intervals'),
+    prevent_initial_call=True
+)      
+def update_gauge_value(n_intervals):
+    dht = DHT.DHT(DHTPin)
+    counts = 0  # Measurement counts
+    temperature = 0.0
+    humidity = 0.0
+    for i in range(0, 15):
+        chk = dht.readDHT11()
+        if chk is dht.DHTLIB_OK:  # Accessing DHTLIB_OK from the DHT class
+            temperature = dht.temperature
+            humidity = dht.humidity
+            break
+        time.sleep(0.1)
+        
+    return temperature, humidity
 
-@app.callback(Output('gauge', 'value'), [])
-def update_gauge_value():
-    dht = DHT.DHT(DHTPin)  
-    counts = 0
-    while True:
-        counts += 1
-        print("Measurement counts: ", counts)
-        for i in range(0, 15):
-            chk = dht.readDHT11()
-            if chk is dht.DHTLIB_OK:
-                print("DHT11, OK!")
-                return dht.temperature  
-            time.sleep(0.1)
-        print("Failed to read DHT11 data")
-        time.sleep(2)
-
-@app.callback(
+@callback(
     [Output('email-state', 'children'),
      Output('email-switch', 'color'),
      Output('fan', 'src')],
@@ -85,4 +94,4 @@ def update_output(value):
         return 'Turn OFF fan.', 'none', 'assets/fan off.png'  
 
 if __name__ == '__main__':
-    app.run_server(debug=True)
+    app.run(debug=True)
