@@ -1,6 +1,10 @@
+import RPi.GPIO as GPIO
+import Freenove_DHT as DHT
 import dash_daq as daq
-import random
+import time
 from dash import Dash, html, callback, Input, Output, dcc
+
+DHTPin = 11
 
 app = Dash(__name__)
 
@@ -60,9 +64,11 @@ app.layout = html.Div([
     prevent_initial_call=True
 )
 def update_gauges(n_intervals):
-    humidity = random.randint(30, 60)
-    temperature = random.randint(18, 25)
-    return [humidity, temperature]
+    dht = DHT.DHT(DHTPin)
+    while(True):
+        dht.readDHT11()	
+        print(dht.humidity, dht.temperature)
+        return [dht.humidity, dht.temperature]
 
 
 @callback(

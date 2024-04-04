@@ -2,25 +2,17 @@ import RPi.GPIO as GPIO
 import time
 import Freenove_DHT as DHT
 import dash_daq as daq
-import dash_core_components as dcc
-from dash import Dash, html, Input, Output, callback
+from dash import Dash, dcc, html, Input, Output, callback
 
 DHTPin = 11
 
 app = Dash(__name__)
 
-#GPIO.setmode(GPIO.BCM)
-#LED_PIN = 17
-#GPIO.setup(LED_PIN, GPIO.OUT)
 
 app.layout = html.Div([
     html.Div(
         'IoT Phase 2 Project',
         style={'text-align': 'center', 'margin': '10px'}
-    ),
-    daq.ToggleSwitch(
-        id='email-switch',
-        value=False,  
     ),
     html.Div(
         id='email-state',
@@ -64,25 +56,23 @@ app.layout = html.Div([
 )      
 def update_gauge_value(n_intervals):
     dht = DHT.DHT(DHTPin)
-    counts = 0  # Measurement counts
-    temperature = 0.0
-    humidity = 0.0
-    for i in range(0, 15):
-        chk = dht.readDHT11()
-        if chk is dht.DHTLIB_OK:  # Accessing DHTLIB_OK from the DHT class
-            temperature = dht.temperature
-            humidity = dht.humidity
-            break
-        time.sleep(0.1)
-        
-    return temperature, humidity
+    okCnt = 0
+	while True:
+		sumCnt += 1
+		chk = dht.readDHT11()	
+		if (chk is 0):
+			okCnt += 1		
+		okRate = 100.0*okCnt/sumCnt;
+		print("sumCnt : %d, \t okRate : %.2f%% "%(sumCnt,okRate))
+		print("chk : %d, \t Humidity : %.2f, \t Temperature : %.2f "%(chk,dht.humidity,dht.temperature))
+		time.sleep(3)
 
-@callback(
-    [Output('email-state', 'children'),
-     Output('email-switch', 'color'),
-     Output('fan', 'src')],
-    [Input('email-switch', 'value')]
-)
+# @callback(
+#     [Output('email-state', 'children'),
+#      Output('email-switch', 'color'),
+#      Output('fan', 'src')],
+#     [Input('email-switch', 'value')]
+# )
 def update_output(value):
     if value:
         GPIO.output(LED_PIN, GPIO.HIGH)
