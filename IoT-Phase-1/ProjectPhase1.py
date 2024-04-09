@@ -1,9 +1,11 @@
 from dash import Dash, html, Input, Output, callback
 import dash_daq as daq
+# noinspection PyUnresolvedReferences
 import RPi.GPIO as GPIO
 
 app = Dash(__name__)
 
+GPIO.setwarnings(False)
 GPIO.setmode(GPIO.BCM)
 LED_PIN = 17
 GPIO.setup(LED_PIN, GPIO.OUT)
@@ -53,4 +55,4 @@ def update_output(value):
 
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(host='0.0.0.0', port=8050, debug=True)

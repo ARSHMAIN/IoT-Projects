@@ -1,9 +1,12 @@
+# noinspection PyUnresolvedReferences
 import RPi.GPIO as GPIO
 import Freenove_DHT as DHT
 import dash_daq as daq
+import email_system as email_system
 import time
 from dash import Dash, html, callback, Input, Output, dcc
 
+GPIO.setwarnings(False)
 DHTPin = 11
 
 app = Dash(__name__)
@@ -34,6 +37,7 @@ app.layout = html.Div([
             }
         },
         id='humidity-gauge',
+        showCurrentValue=True,
         label="Humidity",
         value=0,
         max=50,
@@ -65,33 +69,40 @@ app.layout = html.Div([
 )
 def update_gauges(n_intervals):
     dht = DHT.DHT(DHTPin)
-    while(True):
+    while True:
         dht.readDHT11()	
-        print(dht.humidity, dht.temperature)
+        print(f'Humidity: {dht.humidity}', f'Temperature: {dht.temperature}')
         return [dht.humidity, dht.temperature]
 
 
 @callback(
-    [Output('email', 'children')],
+    [Output('fan', 'src')],
     [Input('temperature-gauge', 'value')]
 )
 def send_email(temperature):
-    if temperature > 23:
-        return [f'Email sent! Temperature is {temperature}!']
-    return [f'Email not sent!']
-
-
-@callback(
-    [Output('fan', 'src')],
-    [Input('email', 'children')]
-)
-def receive_email(email):
-    if 'Email not sent!' in email:
-        print(email)
+    print('\n')
+    send_response = email_system.send_email(temperature)
+    # print(send_response)
+    # if 'Email sent successfully!' in send_response:
+    receive_response = email_system.receive_email()
+    print(receive_response)
+    if not receive_response or 'Error' in receive_response:
         return ['assets/fan off.png']
-    else:
-        return ['assets/fan on.png']
+    return ['assets/fan on.png']
+
+
+
+# @callback(
+#     [Output('fan', 'src')],
+#     [Input('email', 'children')]
+# )
+# def receive_email(email):
+#     if 'Email not sent!' in email:
+#         print(email)
+#         return ['assets/fan off.png']
+#     else:
+#         return ['assets/fan on.png']
 
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(host='0.0.0.0', port=8050, debug=True)
