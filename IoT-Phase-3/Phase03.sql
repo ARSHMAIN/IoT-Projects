@@ -5,8 +5,6 @@ Maximus Taube
 Database design and implementation.
 */
 
-CREATE DATABASE IF NOT EXISTS IoTDatabase;
-
 CREATE TABLE IF NOT EXISTS UserThresholds (
     UserID INTEGER PRIMARY KEY AUTOINCREMENT,
     Name TEXT NOT NULL,
