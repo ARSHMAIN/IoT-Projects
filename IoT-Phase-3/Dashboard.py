@@ -1,7 +1,13 @@
-import sqlite3
-import dash
+'''
+IoT Project Phase03
+Maximus Taube
+2095310
+UI design and implementation with database.
+'''
+
 import sqlite3
 import os
+import dash
 from dash import html, dcc
 from dash.dependencies import Input, Output, State
 
@@ -13,10 +19,10 @@ db_path = os.path.join(current_dir, 'Phase03.db')
 conn = sqlite3.connect(db_path)
 cursor = conn.cursor()
 
-# Get the user names from the database
-cursor.execute('SELECT Name FROM UserThresholds')
+# Get the user names and RFID from the database
+cursor.execute('SELECT Name, RFID FROM UserThresholds')
 user_rows = cursor.fetchall()
-user_options = [{'label': user[0], 'value': user[0]} for user in user_rows]
+user_options = [{'label': user[0], 'value': user[1]} for user in user_rows]
 
 # Close the database connection
 conn.close()
@@ -35,8 +41,8 @@ app.layout = html.Div([
     html.H1("Login"),
     html.Label("Select User"),
     dcc.Dropdown(id='user-dropdown', options=user_options, value=None),
-    html.Label("Password (default: 123)"),
-    dcc.Input(id='password-input', type='password', value=''),
+    html.Label("RFID"),
+    dcc.Input(id='password-input', type='text', value=''),
     html.Button('Login', id='login-button', n_clicks=0),
     html.Div(id='login-message'),
     html.Div(id='page-content')
@@ -52,7 +58,7 @@ app.layout = html.Div([
 )
 def login(n_clicks, selected_user, password):
     if n_clicks > 0:
-        if selected_user and password == "123":  # Assume password is always 123 for now
+        if selected_user and password == selected_user:  # Compare with RFID
             # Redirect to the IoT dashboard page
             return dashboard_layout, ''
         else:
