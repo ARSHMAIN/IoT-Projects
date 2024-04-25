@@ -3,7 +3,7 @@ import RPi.GPIO as GPIO
 import Freenove_DHT as DHT
 import dash_daq as daq
 import email_system as email_system
-import time
+import motor as motor
 from dash import Dash, html, callback, Input, Output, dcc
 
 GPIO.setwarnings(False)
@@ -67,7 +67,7 @@ app.layout = html.Div([
     [Input('interval-component', 'n_intervals')],
     prevent_initial_call=True
 )
-def update_gauges(n_intervals):
+def update_gauges(n):
     dht = DHT.DHT(DHTPin)
     while True:
         dht.readDHT11()	
@@ -82,11 +82,11 @@ def update_gauges(n_intervals):
 def send_email(temperature):
     print('\n')
     send_response = email_system.send_email(temperature)
-    # print(send_response)
+    print(send_response)
     # if 'Email sent successfully!' in send_response:
     receive_response = email_system.receive_email()
     print(receive_response)
-    if not receive_response or 'Error' in receive_response:
+    if not receive_response or ('Error' in str(receive_response)):
         return ['assets/fan off.png']
     return ['assets/fan on.png']
 
@@ -105,4 +105,4 @@ def send_email(temperature):
 
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=8050, debug=True)
+    app.run(host='192.168.156.68', port=8050, debug=True)

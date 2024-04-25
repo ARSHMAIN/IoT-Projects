@@ -55,4 +55,5 @@ def update_output(value):
 
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=8050, debug=True)
+    app.run(host='192.168.2.99', port=8050, debug=True)
+
