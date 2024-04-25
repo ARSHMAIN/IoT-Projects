@@ -10,24 +10,40 @@ email_interval = 60  # Adjust this value as needed
 
 app = Dash(__name__)
 
+external_stylesheets = ['https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css']
+
+app = Dash(__name__, external_stylesheets=external_stylesheets)
+
 app.layout = html.Div([
     html.H1(
         id='Title',
         children='Phase 3',
         style={'textAlign': 'center'}
     ),
-    html.Img(
-        id='led',
-        src='assets/LED OFF.jpg',  # image path
-        alt='LED light',
-        style={'display': 'block', 'margin': 'auto'}
+    html.Div(
+        className='container',  
+        style={'background-color': 'black', 'padding': '20px'},  
+        children=[
+            html.Img(
+                id='led',
+                src='assets/LED OFF.jpg',  # image path
+                alt='LED light',
+                style={'display': 'block', 'margin': 'auto'}
+            ),
+        ]
     ),
-    dcc.Slider(
-        id="light-sensor-slider",
-        min=0,
-        max=1000,
-        value=0,
-        disabled=True,
+    html.Div(
+        className='container',  
+        style={'background-color': 'darkgray', 'padding': '20px'},  
+        children=[
+            dcc.Slider(
+                id="light-sensor-slider",
+                min=0,
+                max=1000,
+                value=0,
+                disabled=True,
+            ),
+        ]
     ),
     html.H1(
         id='email-status',
@@ -54,7 +70,7 @@ mqtt_sub.start_mqtt_client()
 def update_mqtt_data(n):
     global last_email_time  # Use global variable for tracking last email time
     print(mqtt_sub.get_led_status(), mqtt_sub.get_light_brightness())
-    if  mqtt_sub.get_led_status() == 'LED ON':
+    if mqtt_sub.get_led_status() == 'LED ON':
         if last_email_time is None or datetime.now() - last_email_time >= timedelta(seconds=email_interval):
             notification_email.send_email()
             last_email_time = datetime.now()
