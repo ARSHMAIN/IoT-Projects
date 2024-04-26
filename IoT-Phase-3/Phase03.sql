@@ -1,10 +1,3 @@
-/*
-IoT Project Phase03
-Maximus Taube
-2095310
-Database design and implementation.
-*/
-
 CREATE TABLE IF NOT EXISTS UserThresholds (
     UserID INTEGER PRIMARY KEY AUTOINCREMENT,
     RFID TEXT NOT NULL,

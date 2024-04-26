@@ -12,10 +12,8 @@ def on_message(client, userdata, msg):
     global led_status, light_brightness
     if msg.topic == "light-sensor/brightness":
         light_brightness = msg.payload.decode()
-        # print(light_brightness)
     elif msg.topic == "led/status":
         led_status = msg.payload.decode()
-        # print(led_status)
 
 def start_mqtt_client():
     mqttc = mqtt.Client(mqtt.CallbackAPIVersion.VERSION2)
