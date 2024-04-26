@@ -3,9 +3,7 @@ import email_system as notification_email
 import MQTT_Sub as mqtt_sub
 from datetime import datetime, timedelta
 
-# Define a variable to store the time when the last email was sent
 last_email_time = None
-# Define the minimum time interval between emails (in seconds)
 email_interval = 60  # Adjust this value as needed
 
 app = Dash(__name__)
@@ -43,7 +41,7 @@ app.layout = html.Div([
         children=[
             html.Div(
                 id='light-intensity-text',
-                children='Light Intensity',
+                children=['Light Intensity: ', html.Span(id='light-intensity-value', children="Placeholder")],
                 style={'color': 'black', 'font-size': '24px', 'font-family': 'Helvetica Neue', 'font-weight': 'bold'}
             ),
             html.Div(
@@ -85,7 +83,8 @@ mqtt_sub.start_mqtt_client()
 @app.callback(
     [Output('led', 'src'),
      Output('light-sensor-slider', 'value'),
-     Output('email-status', 'children')],  # Add Output for email status
+     Output('email-status', 'children'),
+     Output('light-intensity-value', 'children')],  # Add Output for light intensity value
     Input('interval-component', 'n_intervals')  # Using an interval component to trigger updates
 )
 def update_mqtt_data(n):
@@ -96,8 +95,7 @@ def update_mqtt_data(n):
             last_email_time = datetime.now()
     light_value = int(mqtt_sub.get_light_brightness())
     email_status = email_message(light_value)  # Call email_message function
-    return f"assets/{mqtt_sub.get_led_status()}.jpg", light_value, email_status
-
+    return f"assets/{mqtt_sub.get_led_status()}.jpg", light_value, email_status, light_value
 
 
 if __name__ == '__main__':
