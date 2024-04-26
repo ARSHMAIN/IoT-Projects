@@ -18,15 +18,20 @@ app.layout = html.Div([
     html.H1(
         id='Title',
         children='Phase 3',
-        style={'textAlign': 'center'}
+        style={'textAlign': 'center', 'font-family': 'Helvetica Neue', 'font-weight': 'bold'}
     ),
     html.Div(
         className='container',  
-        style={'background-color': 'black', 'padding': '20px'},  
+        style={'textAlign': 'center'},  
         children=[
+            html.Div(
+                id='light-status-text',
+                children='Light Status',
+                style={'color': 'black', 'font-size': '24px', 'font-family': 'Helvetica Neue', 'font-weight': 'bold'}
+            ),
             html.Img(
                 id='led',
-                src='assets/LED OFF.jpg',  # image path
+                src='assets/LED OFF.jpg', 
                 alt='LED light',
                 style={'display': 'block', 'margin': 'auto'}
             ),
@@ -34,14 +39,22 @@ app.layout = html.Div([
     ),
     html.Div(
         className='container',  
-        style={'background-color': 'darkgray', 'padding': '20px'},  
+        style={'textAlign': 'center'},  
         children=[
-            dcc.Slider(
-                id="light-sensor-slider",
-                min=0,
-                max=1000,
-                value=0,
-                disabled=True,
+            html.Div(
+                id='light-intensity-text',
+                children='Light Intensity',
+                style={'color': 'black', 'font-size': '24px', 'font-family': 'Helvetica Neue', 'font-weight': 'bold'}
+            ),
+            html.Div(
+                dcc.Slider(
+                    id="light-sensor-slider",
+                    min=0,
+                    max=1000,
+                    value=0,
+                    disabled=True,
+                ),
+                style={'padding': '20px'}
             ),
         ]
     ),
@@ -57,6 +70,13 @@ app.layout = html.Div([
     )
 ])
 
+
+def email_message(light_value):
+    if light_value > 400:
+        return "Email has been sent"
+    else:
+        return ""
+    
 # Start the MQTT client when the Dash app starts
 mqtt_sub.start_mqtt_client()
 
@@ -64,17 +84,20 @@ mqtt_sub.start_mqtt_client()
 # Callback to update Dash app layout with MQTT data
 @app.callback(
     [Output('led', 'src'),
-     Output('light-sensor-slider', 'value')],
+     Output('light-sensor-slider', 'value'),
+     Output('email-status', 'children')],  # Add Output for email status
     Input('interval-component', 'n_intervals')  # Using an interval component to trigger updates
 )
 def update_mqtt_data(n):
     global last_email_time  # Use global variable for tracking last email time
-    print(mqtt_sub.get_led_status(), mqtt_sub.get_light_brightness())
     if mqtt_sub.get_led_status() == 'LED ON':
         if last_email_time is None or datetime.now() - last_email_time >= timedelta(seconds=email_interval):
             notification_email.send_email()
             last_email_time = datetime.now()
-    return [f"assets/{mqtt_sub.get_led_status()}.jpg", int(mqtt_sub.get_light_brightness())]
+    light_value = int(mqtt_sub.get_light_brightness())
+    email_status = email_message(light_value)  # Call email_message function
+    return f"assets/{mqtt_sub.get_led_status()}.jpg", light_value, email_status
+
 
 
 if __name__ == '__main__':
