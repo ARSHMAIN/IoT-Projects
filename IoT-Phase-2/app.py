@@ -1,13 +1,16 @@
+
 # noinspection PyUnresolvedReferences
 import RPi.GPIO as GPIO
 import Freenove_DHT as DHT
 import dash_daq as daq
 import email_system as email_system
-import motor as motor
+import time
 from dash import Dash, html, callback, Input, Output, dcc
 
+GPIO.setmode(GPIO.BOARD)
 GPIO.setwarnings(False)
 DHTPin = 11
+
 
 app = Dash(__name__)
 
@@ -80,29 +83,22 @@ def update_gauges(n):
     [Input('temperature-gauge', 'value')]
 )
 def send_email(temperature):
-    print('\n')
     send_response = email_system.send_email(temperature)
     print(send_response)
-    # if 'Email sent successfully!' in send_response:
+
     receive_response = email_system.receive_email()
     print(receive_response)
+
     if not receive_response or ('Error' in str(receive_response)):
         return ['assets/fan off.png']
     return ['assets/fan on.png']
 
-
-
-# @callback(
-#     [Output('fan', 'src')],
-#     [Input('email', 'children')]
-# )
-# def receive_email(email):
-#     if 'Email not sent!' in email:
-#         print(email)
-#         return ['assets/fan off.png']
-#     else:
-#         return ['assets/fan on.png']
-
-
 if __name__ == '__main__':
-    app.run(host='192.168.156.68', port=8050, debug=True)
+    app.run(host='192.168.33.68', port=8050, debug=True)
+    MotorEnable = 36  # Enable Pin GPIO 16
+    MotorInput2 = 38  # Input Pinn GPIO 20
+    MotorInput3 = 40  # Input Pinn GPIO 21
+
+    GPIO.setup(MotorEnable, GPIO.OUT)
+    GPIO.setup(MotorInput2, GPIO.OUT)
+    GPIO.setup(MotorInput3, GPIO.OUT)
