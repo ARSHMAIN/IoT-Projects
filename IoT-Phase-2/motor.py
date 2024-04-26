@@ -21,4 +21,4 @@ def motor_on():
 
 
 # https://raspberrypi.stackexchange.com/questions/12966/what-is-the-difference-between-board-and-bcm-for-gpio-pin-numbering
-# fix at home
+# fix

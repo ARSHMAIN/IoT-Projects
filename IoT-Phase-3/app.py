@@ -99,5 +99,5 @@ def update_mqtt_data(n):
 
 
 if __name__ == '__main__':
-    # app.run(debug=True)
-    app.run(host='192.168.241.68', port=8050, debug=True)
+    app.run(debug=True)
+    # app.run(host='192.168.33.68', port=8050, debug=True)
