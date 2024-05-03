@@ -104,7 +104,7 @@ dashboard_layout = html.Div(style={'backgroundColor': colors['background']}, chi
     ),
     dcc.Interval(
         id='interval-component',
-        interval=500,
+        interval=2000,
         n_intervals=0
     ),
     html.Div(

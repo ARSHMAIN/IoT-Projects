@@ -20,7 +20,7 @@ def start_mqtt_client():
     mqttc.on_connect = on_connect
     mqttc.on_message = on_message
 
-    mqttc.connect("192.168.2.32", 1883, 60)
+    mqttc.connect("192.168.107.236", 1883, 60)
 
     mqttc.loop_start()
 
