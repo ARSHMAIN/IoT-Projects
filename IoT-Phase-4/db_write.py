@@ -1,5 +1,6 @@
 import sqlite3
 import MQTT_Sub as mqtt_sub
+import time
 
 db_path = 'Phase04.db'
 
@@ -15,10 +16,13 @@ def get_user_by_rfid():
     conn.close()
     return user[0] if user else None
 
-# Test the function
-if __name__ == '__main__':
-    user = get_user_by_rfid()
-    if user:
-        print(f"User with RFID {mqtt_sub.get_rfid_data()} found: {user}")
-    else:
-        print(f"No user found with RFID {mqtt_sub.get_rfid_data()}")
+try:
+    while True:
+        user = get_user_by_rfid()
+        if user:
+            print(f"User with RFID {mqtt_sub.get_rfid_data()} found: {user}")
+        else:
+            print(f"No user found with RFID {mqtt_sub.get_rfid_data()}")
+        time.sleep(1)
+except KeyboardInterrupt:
+    print("Process stopped by user")
