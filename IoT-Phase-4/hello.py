@@ -1,30 +1,29 @@
 import dash
-from dash import html, dcc
+import dash_html_components as html
+import dash_core_components as dcc
 import dash_daq as daq
 from dash.dependencies import Input, Output
 
-# Initialize the Dash app
 app = dash.Dash(__name__)
 
-# Define the layout using Dash components
 app.layout = html.Div(
     children=[
         html.Div(
             id='profile',
             children=[
-                html.P('Profile', style={'color': 'grey', 'textAlign': 'center', 'font-family': 'Verdana', 'fontSize': '40px'}),
-                html.Img(src='/assets/my_sunshine.jpg', style={'width': '150px', 'height': '150px', 'borderRadius': '50%', 'margin': '0 auto', 'display': 'block'}),
-                html.Label('User ID', style={'color': 'grey', 'margin-bottom': '5px', 'display': 'block', 'font-family': 'Verdana'}),
-                dcc.Input(id='user-id', type='text', value='', style={'width': '100%', 'margin-bottom': '20px', 'height': '50px'}),
-                html.Label('Name', style={'color': 'grey', 'margin-bottom': '5px', 'display': 'block', 'font-family': 'Verdana'}),
-                dcc.Input(id='name', type='text', value='', style={'width': '100%', 'margin-bottom': '20px', 'height': '50px'}),
-                html.Label('Temp. Threshold', style={'color': 'grey', 'margin-bottom': '5px', 'display': 'block', 'font-family': 'Verdana'}),
-                dcc.Input(id='temp-threshold', type='number', value=0, style={'width': '100%', 'margin-bottom': '20px', 'height': '50px', 'font-family': 'Verdana'}),
-                html.Label('Humidity Threshold', style={'color': 'grey', 'margin-bottom': '5px', 'display': 'block', 'font-family': 'Verdana'}),
-                dcc.Input(id='humidity-threshold', type='number', value=0, style={'width': '100%', 'margin-bottom': '20px', 'height': '50px', 'font-family': 'Verdana'}),
-                html.Label('Light Intensity Threshold', style={'color': 'grey', 'margin-bottom': '5px', 'display': 'block', 'font-family': 'Verdana'}),
-                dcc.Input(id='light-intensity-threshold', type='number', value=0, style={'width': '100%', 'margin-bottom': '20px', 'height': '50px'}),
-                html.Button('Submit Changes', id='submit-button', n_clicks=0, style={'width': '100%', 'height': '50px', 'backgroundColor': 'lightblue', 'margin-top': '20px', 'font-family': 'Verdana'})
+                html.P('Profile', style={'fontSize': '40px'}),
+                html.Img(src='/assets/my_sunshine.jpg', style={'width': '150px', 'height': '150px', 'borderRadius': '50%'}),
+                html.Label('User ID'),
+                dcc.Input(id='user-id', type='text', value=''),
+                html.Label('Name'),
+                dcc.Input(id='name', type='text', value=''),
+                html.Label('Temp. Threshold'),
+                dcc.Input(id='temp-threshold', type='number', value=0),
+                html.Label('Humidity Threshold'),
+                dcc.Input(id='humidity-threshold', type='number', value=0),
+                html.Label('Light Intensity Threshold'),
+                dcc.Input(id='light-intensity-threshold', type='number', value=0),
+                html.Button('Submit Changes', id='submit-button', n_clicks=0)
             ],
             style={'flex': 1, 'width': '20%', 'borderRadius': '10px', 'border': '5px ridge rgb(128, 0, 32)', 'padding': '20px', 'textAlign': 'center'}
         ),
@@ -33,13 +32,14 @@ app.layout = html.Div(
             id='phases-container',
             children=[
                 html.Div(
-                    id='right-phases',
+                    className='phase2',
                     children=[
                         html.Div(
-                            id='phase2',
+                            className='gauge-container',
                             children=[
                                 html.Div([
-                                        daq.Thermometer(
+                                    html.Label('Temperature'),
+                                    daq.Thermometer(
                                         id='temperature-gauge',
                                         label='Temperature',
                                         labelPosition='top',
@@ -48,8 +48,11 @@ app.layout = html.Div(
                                         value=0,
                                         min=-30,
                                         max=40,
-                                        style={'width': '50%', 'margin-right': '5%', 'color': 'grey', 'height': '100px'}
-                                    ),
+                                        style={'width': '100%', 'color': 'grey'}
+                                    )
+                                ], style={'width': '50%'}),
+                                html.Div([
+                                    html.Label('Humidity'),
                                     daq.Gauge(
                                         color={
                                             "gradient": True,
@@ -65,61 +68,44 @@ app.layout = html.Div(
                                         value=0,
                                         max=50,
                                         min=0,
-                                        style={'width': '50%', 'color': 'grey', 'height': '100px'}
+                                        style={'width': '100%', 'color': 'grey'}
                                     )
-
-
-                                ], style={'display': 'flex', 'justifyContent': 'space-between'}),
-                            ],
-                            style={'flex': 1, 'border': '5px ridge rgb(128, 0, 32)', 'padding': '20px'}
-                        ),
+                                ], style={'width': '50%'})
+                            ]
+                        )
+                    ]
+                ),
+                html.Div(
+                    className='phase3',
+                    children=[
                         html.Div(
-                            id='phase3',
+                            className='control-section',
                             children=[
                                 html.Div([
-                                    html.Div([
-                                        html.Div("Light Control", style={'color': 'grey', 'textAlign': 'center', 'margin-right': '175px', 'margin-bottom': '20px', 'font-family': 'Verdana'}),
-                                        html.Img(src='/assets/led_off.png', style={'width': '100px', 'height': '100px', 'borderRadius': '50%', 'margin-right': '175px'}),
-                                        daq.BooleanSwitch(
-                                            id='light-switch',
-                                            on=False,
-                                            style={'font-family': 'Verdana', 'color': 'green', 'margin-top': '20px', 'margin-right': '175px'}
-                                        ),
-                                        html.P('Light Intensity:', style={'color': 'grey', 'textAlign': 'center', 'font-family': 'Verdana', 'margin-right': '175px'}),
-                                        html.P('Light Status:', style={'color': 'grey', 'textAlign': 'center', 'font-family': 'Verdana', 'margin-right': '175px'}),
-                                    ], style={'display': 'inline-block'}),
-
-                                    html.Div([
-                                        html.Div("Fan Control", style={'color': 'grey', 'textAlign': 'center', 'margin-left': '175px', 'margin-bottom': '20px', 'font-family': 'Verdana'}),
-                                        html.Img(src='/assets/fan_off.png', style={'width': '100px', 'height': '100px', 'borderRadius': '50%', 'margin-left': '175px'}),
-                                        daq.BooleanSwitch(
-                                            id='fan-switch',
-                                            on=False,
-                                            style={'font-family': 'Verdana', 'color': 'green', 'margin-top': '20px', 'margin-left': '175px'}
-                                        ),
-                                        html.P('Fan Intensity:', style={'color': 'grey', 'textAlign': 'center', 'font-family': 'Verdana', 'margin-left': '175px'}),
-                                    ], style={'display': 'inline-block'})
-                                ], style={'display': 'flex', 'justifyContent': 'center', 'alignItems': 'center'})
-                            ],
-                            style={'flex': 1, 'border': '5px ridge rgb(128, 0, 32)', 'padding': '20px'}
-                        ),
-                        html.Div(
-                            id='phase4',
-                            children=[
-                                html.P(style={'color': 'grey', 'textAlign': 'center', 'font-family': "Verdana"})
-                            ],
-                            style={'flex': 1, 'border': '5px ridge rgb(128, 0, 32)'}
+                                    html.P('Light Control'),
+                                    html.Img(src='/assets/led_off.png', style={'width': '100px', 'height': '100px', 'borderRadius': '50%'}),
+                                    dcc.Checklist(id='light-switch', options=[{'label': 'Light Switch', 'value': 'on'}]),
+                                    html.P('Light Intensity:'),
+                                    html.P('Light Status:')
+                                ]),
+                                html.Div([
+                                    html.P('Fan Control'),
+                                    html.Img(src='/assets/fan_off.png', style={'width': '100px', 'height': '100px', 'borderRadius': '50%'}),
+                                    dcc.Checklist(id='fan-switch', options=[{'label': 'Fan Switch', 'value': 'on'}]),
+                                    html.P('Fan Intensity:')
+                                ])
+                            ]
                         )
-                    ],
-                    style={'display': 'flex', 'flexDirection': 'column', 'flex': 1}
-                )
+                    ]
+                ),
+                html.Div(className='phase4', children=[html.P('Phase 4 Placeholder')]),
+                html.Div(className='bluetooth', children=[html.P('Bluetooth Placeholder')])
             ],
-            style={'display': 'flex', 'flex': 1, 'justifyContent': 'flex-end'}
+            style={'flex': 1, 'padding': '20px', 'display': 'flex', 'flexWrap': 'wrap', 'justifyContent': 'flex-end'}
         )
     ],
     style={'display': 'flex', 'flexDirection': 'row', 'height': '100vh', 'margin': 0, 'padding': 0, 'backgroundColor': 'rgb(52, 52, 52)'}
 )
 
-# Run the Dash app
 if __name__ == '__main__':
     app.run_server(debug=True)
