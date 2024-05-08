@@ -1,24 +1,39 @@
 import RPi.GPIO as GPIO
+from time import sleep
 
+# GPIO.setmode(GPIO.BCM)
 GPIO.setmode(GPIO.BOARD)
 GPIO.setwarnings(False)
 
-MotorEnable = 22  # Enable Pin
-MotorInput1 = 27  # Input Pin
-MotorInput2 = 17  # Input Pin
+Temperature = 22
+Motor1 = 33 # Enable Pin GPIO 13
+Motor2 = 35 # Input Pin GPIO 19
+Motor3 = 37 # Input Pin GPIO 26
 
-GPIO.setup(MotorEnable, GPIO.OUT)
-GPIO.setup(MotorInput1, GPIO.OUT)
-GPIO.setup(MotorInput2, GPIO.OUT)
+GPIO.setup(Motor1,GPIO.OUT)
+GPIO.setup(Motor2,GPIO.OUT)
+GPIO.setup(Motor3,GPIO.OUT)
+
+def setup_gpio():
+    Motor1 = 33  # Enable Pin GPIO 13
+    Motor2 = 35  # Input Pin GPIO 19
+    Motor3 = 37  # Input Pin GPIO 26
+
+    GPIO.setup(Motor1, GPIO.OUT)
+    GPIO.setup(Motor2, GPIO.OUT)
+    GPIO.setup(Motor3, GPIO.OUT)
+
+def motor_on(temperature):
+    if  temperature >= 22:
+        GPIO.output(Motor1, GPIO.HIGH)
+        GPIO.output(Motor2, GPIO.LOW)
+        GPIO.output(Motor3, GPIO.HIGH)
+
 def motor_off():
- GPIO.output(MotorEnable, GPIO.LOW)
- GPIO.cleanup()
-
-def motor_on():
- GPIO.output(MotorEnable, GPIO.HIGH)
- GPIO.output(MotorInput1, GPIO.LOW)
- GPIO.output(MotorInput2, GPIO.HIGH)
+    GPIO.output(Motor1, GPIO.LOW)
 
 
-# https://raspberrypi.stackexchange.com/questions/12966/what-is-the-difference-between-board-and-bcm-for-gpio-pin-numbering
-# fix
+motor_on(Temperature)
+sleep(5)
+motor_off()
+GPIO.cleanup()
