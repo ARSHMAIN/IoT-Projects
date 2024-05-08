@@ -7,6 +7,14 @@ app = dash.Dash(__name__)
 
 app.layout = html.Div(
     children=[
+        html.Nav(
+            style={'backgroundColor': '#333'},
+            children=[
+                html.Div(className="nav-wrapper", children=[
+                    html.A('Final Phase', href="#", className="brand-logo center", style={'textAlign': 'center', 'width': '100%'})
+                ])
+            ]
+        ),
         html.Div(
             id='profile',
             children=[
