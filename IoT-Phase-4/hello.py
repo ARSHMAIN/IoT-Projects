@@ -7,14 +7,6 @@ app = dash.Dash(__name__)
 
 app.layout = html.Div(
     children=[
-        html.Nav(
-            style={'backgroundColor': '#333'},
-            children=[
-                html.Div(className="nav-wrapper", children=[
-                    html.A('Final Phase', href="#", className="brand-logo center", style={'textAlign': 'center', 'width': '100%'})
-                ])
-            ]
-        ),
         html.Div(
             id='profile',
             children=[
@@ -32,7 +24,7 @@ app.layout = html.Div(
                 dcc.Input(id='light-intensity-threshold', type='number', value=0, style={'width': '100%', 'margin-bottom': '20px', 'height': '50px'}),
                 html.Button('Submit Changes', id='submit-button', n_clicks=0, style={'width': '100%', 'height': '50px', 'backgroundColor': 'lightblue', 'margin-top': '20px', 'font-family': 'Verdana'})
             ],
-            style={'flex': 1, 'width': '200%', 'borderRadius': '10px', 'border': '5px ridge rgb(128, 0, 32)', 'padding': '20px', 'textAlign': 'center', 'backgroundColor': 'lightgrey'}
+            style={'flex': 1, 'width': '200%', 'borderRadius': '10px',  'padding': '20px', 'textAlign': 'center', }
         ),
 
         html.Div(
@@ -53,9 +45,9 @@ app.layout = html.Div(
                                             showCurrentValue=True,
                                             units="C",
                                             value=0,
-                                            min=-30,
+                                            min=-0,
                                             max=40,
-                                            style={'width': '300px', 'height': '300px', 'margin-right': '5%', 'border': '5px solid black', 'border-color': 'rgb(128, 0, 32)', 'backgroundColor': 'lightgrey'}
+                                            style={'width': '350px', 'height': '300px', 'margin-right': '30px', 'margin-left': '10px', 'border': '0px solid black', 'border-color': 'rgb(128, 0, 32)', 'backgroundColor': 'lightgrey', 'borderRadius': '10px', 'fontFamily': 'Verdana', 'color': 'grey'}
                                         ),
                                         style={'width': '50%', 'display': 'inline-block'}
                                     ),
@@ -67,21 +59,22 @@ app.layout = html.Div(
                                                     "green": [0, 18],
                                                     "yellow": [18, 24],
                                                     "red": [24, 30]
-                                                }
+                                                },
+                                                "value": "red"
                                             },
                                             id='humidity-gauge',
                                             showCurrentValue=True,
                                             label="Humidity",
-                                            value=0,
+                                            value=0, 
                                             max=50,
                                             min=0,
-                                            style={'width': '300px', 'height': '300px', 'border': '5px solid black', 'border-color': 'rgb(128, 0, 32)', 'backgroundColor': 'lightgrey'}
+                                            style={'width': '350px', 'height': '300px', 'margin-right': '50px', 'margin-left': '75px', 'border': '0px solid black', 'border-color': 'rgb(128, 0, 32)', 'backgroundColor': 'lightgrey', 'borderRadius': '10px', 'fontFamily': 'Verdana', 'color': 'grey'},
                                         ),
                                         style={'width': '50%', 'display': 'inline-block'}
                                     )
                                 ], style={'display': 'flex', 'justifyContent': 'space-between'}),
                             ],
-                            style={'flex': 1, 'border': '5px ridge rgb(128, 0, 32)', 'padding': '20px'}
+                            style={'flex': 1, 'padding': '20px'}
                         ),
                         html.Div(
                             id='phase3',
@@ -95,6 +88,7 @@ app.layout = html.Div(
                                                 daq.BooleanSwitch(
                                                     id='light-switch',
                                                     on=False,
+                                                    disabled=True,
                                                     style={'font-family': 'Verdana', 'color': 'green', 'margin-bottom': '20px'}
                                                 ),
                                                 html.P('Light Intensity:', style={'color': 'grey', 'textAlign': 'center', 'font-family': 'Verdana', 'margin-bottom': '20px'}),
@@ -110,6 +104,7 @@ app.layout = html.Div(
                                                 daq.BooleanSwitch(
                                                     id='fan-switch',
                                                     on=False,
+                                                    disabled=True,
                                                     style={'font-family': 'Verdana', 'color': 'green', 'margin-bottom': '20px'}
                                                 ),
                                                 html.P('Fan Status:', style={'color': 'grey', 'textAlign': 'center', 'font-family': 'Verdana', 'margin-bottom': '20px'}),
@@ -121,7 +116,7 @@ app.layout = html.Div(
                                 )
 
                             ],
-                            style={'flex': 1, 'border': '5px ridge rgb(128, 0, 32)', 'padding': '20px'}
+                            style={'flex': 1, 'padding': '20px'}
                         ),
                         html.Div(
                             id='phase4',
@@ -136,7 +131,7 @@ app.layout = html.Div(
                                     dcc.Input(id='rssi-threshold', type='number', value=0, style={'width': '100px', 'margin-top': '20px', 'marginLeft': '20px', 'height': '30px', 'marginBottom': '15px', 'border': '5px solid rgb(29, 119, 242)', 'borderRadius': '10px'})
                                 ], style={'display': 'flex', 'alignItems': 'center'})
                             ],
-                            style={'flex': 1, 'border': '5px ridge rgb(128, 0, 32)', 'padding': '20px'}
+                            style={'flex': 1,  'padding': '20px'}
                         )
                     ],
                     style={'display': 'flex', 'flexDirection': 'column', 'flex': 1}
@@ -150,4 +145,4 @@ app.layout = html.Div(
 
 # Run the Dash app
 if __name__ == '__main__':
-    app.run(host='192.168.137.68', port=8050, debug=False)
+    app.run_server(debug=True)
