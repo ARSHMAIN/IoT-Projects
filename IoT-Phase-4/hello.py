@@ -5,25 +5,8 @@ from dash.dependencies import Input, Output
 
 app = dash.Dash(__name__)
 
-def change_theme(n_clicks):
-    if n_clicks % 2 == 1:  
-        return {'backgroundColor': 'white', 'color': 'black'}
-    else:
-        return {'backgroundColor': 'rgb(52, 52, 52)', 'color': 'white'}
-
 app.layout = html.Div(
     children=[
-        html.Nav(
-            children=[
-                html.Button(
-                    'Change Theme',
-                    id='theme-button',
-                    n_clicks=0,
-                    style={'backgroundColor': 'lightblue', 'color': 'white'}
-                )
-            ],
-            style={'height': '50px', 'display': 'flex', 'justifyContent': 'flex-end', 'alignItems': 'center', 'padding': '0 20px'}
-        ),
         html.Div(
             id='profile',
             children=[
