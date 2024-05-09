@@ -13,3 +13,8 @@ app.layout = html.Div([
 
 if __name__ == '__main__':
     app.run(debug=True)
+
+# pip install dash_daq
+# pip install dash_bootstrap_components
+# pip install pandas
+# .venv\Scripts\activate
