@@ -2,8 +2,9 @@ import dash
 from dash import html, dcc
 import dash_daq as daq
 from dash.dependencies import Input, Output
+import dash_bootstrap_components as dbc
 
-app = dash.Dash(__name__)
+app = dash.Dash(__name__, external_stylesheets=[dbc.themes.BOOTSTRAP])
 
 app.layout = html.Div(
     children=[
@@ -22,7 +23,23 @@ app.layout = html.Div(
                 dcc.Input(id='humidity-threshold', type='number', value=0, style={'width': '100%', 'margin-bottom': '20px', 'height': '50px', 'font-family': 'Verdana'}),
                 html.Label('Light Intensity Threshold', style={'color': 'grey', 'margin-bottom': '5px', 'display': 'block', 'font-family': 'Verdana'}),
                 dcc.Input(id='light-intensity-threshold', type='number', value=0, style={'width': '100%', 'margin-bottom': '20px', 'height': '50px'}),
-                html.Button('Submit Changes', id='submit-button', n_clicks=0, style={'width': '100%', 'height': '50px', 'backgroundColor': 'lightblue', 'margin-top': '20px', 'font-family': 'Verdana'})
+                html.Button('Submit Changes', id='submit-button', n_clicks=0, style={'width': '100%', 'height': '50px', 'backgroundColor': 'lightblue', 'margin-top': '20px', 'font-family': 'Verdana'}),
+                # Toast
+                dbc.Toast(
+                    [html.P("Email has been sent!", className="mb-0")],
+                    id="message",
+                    duration=3000,
+                    is_open=False,
+                    style={'position': 'fixed', 'top': '70px', 'left': '20px', 'width': '300px'}
+                ),
+                dbc.Button(
+                    "Email Status",
+                    id="button_toggle",
+                    color="secondary",
+                    className="mb-3",
+                    n_clicks=0,
+                    style={'position': 'fixed', 'top': '20px', 'left': '20px'}
+                ),
             ],
             style={'flex': 1, 'width': '200%', 'borderRadius': '10px',  'padding': '20px', 'textAlign': 'center', }
         ),
@@ -43,11 +60,10 @@ app.layout = html.Div(
                                             label='Temperature',
                                             labelPosition='top',
                                             showCurrentValue=True,
-                                            units="C",
                                             value=0,
                                             min=-0,
                                             max=40,
-                                            style={'width': '350px', 'height': '300px', 'margin-right': '30px', 'margin-left': '10px', 'border': '0px solid black', 'border-color': 'rgb(128, 0, 32)', 'backgroundColor': 'lightgrey', 'borderRadius': '10px', 'fontFamily': 'Verdana', 'color': 'grey'}
+                                            style={'width': '350px', 'height': '325px', 'margin-right': '30px', 'margin-left': '10px', 'border': '5px solid lightgrey', 'backgroundColor': 'rgb(129, 133, 137)', 'borderRadius': '10px', 'fontFamily': 'Verdana', 'color': 'white'}
                                         ),
                                         style={'width': '50%', 'display': 'inline-block'}
                                     ),
@@ -68,7 +84,7 @@ app.layout = html.Div(
                                             value=0, 
                                             max=50,
                                             min=0,
-                                            style={'width': '350px', 'height': '300px', 'margin-right': '50px', 'margin-left': '75px', 'border': '0px solid black', 'border-color': 'rgb(128, 0, 32)', 'backgroundColor': 'lightgrey', 'borderRadius': '10px', 'fontFamily': 'Verdana', 'color': 'grey'},
+                                            style={'width': '350px', 'height': '325px', 'margin-right': '50px', 'margin-left': '75px', 'border': '5px solid lightgrey', 'backgroundColor': 'rgb(129, 133, 137)', 'borderRadius': '10px', 'fontFamily': 'Verdana', 'color': 'white'},
                                         ),
                                         style={'width': '50%', 'display': 'inline-block'}
                                     )
@@ -83,7 +99,7 @@ app.layout = html.Div(
                                     [
                                         html.Div(
                                             [
-                                                html.Div("Light Control", style={'color': 'grey', 'textAlign': 'center', 'font-family': 'Verdana'}),
+                                                html.Div("Light Control", style={'color': 'white', 'textAlign': 'center', 'font-family': 'Verdana'}),
                                                 html.Img(src='/assets/led_off.png', style={'width': '100px', 'height': '100px', 'borderRadius': '50%', 'margin-bottom': '20px'}),
                                                 daq.BooleanSwitch(
                                                     id='light-switch',
@@ -91,15 +107,15 @@ app.layout = html.Div(
                                                     disabled=True,
                                                     style={'font-family': 'Verdana', 'color': 'green', 'margin-bottom': '20px'}
                                                 ),
-                                                html.P('Light Intensity:', style={'color': 'grey', 'textAlign': 'center', 'font-family': 'Verdana', 'margin-bottom': '20px'}),
-                                                html.P('Light Status:', style={'color': 'grey', 'textAlign': 'center', 'font-family': 'Verdana', 'margin-bottom': '20px'}),
+                                                html.P('Light Intensity:', style={'color': 'white', 'textAlign': 'center', 'font-family': 'Verdana', 'margin-bottom': '20px'}),
+                                                html.P('Light Status:', style={'color': 'white', 'textAlign': 'center', 'font-family': 'Verdana', 'margin-bottom': '20px'}),
                                             ],
-                                            style={'display': 'inline-block', 'border': '5px solid lightgrey', 'padding': '20px', 'borderRadius': '10px', 'text-align': 'center', 'margin-right': '150px', 'width': '300px', 'height': '250px', 'backgroundColor': 'lightgrey'}
+                                            style={'display': 'inline-block', 'border': '5px solid lightgrey', 'padding': '20px', 'borderRadius': '10px', 'text-align': 'center', 'margin-right': '150px', 'width': '350px', 'height': '285px', 'backgroundColor': 'rgb(129, 133, 137)', 'margin-left': '5px'}
                                         ),
 
                                         html.Div(
                                             [
-                                                html.Div("Fan Control", style={'color': 'grey', 'textAlign': 'center', 'font-family': 'Verdana'}),
+                                                html.Div("Fan Control", style={'color': 'white', 'textAlign': 'center', 'font-family': 'Verdana'}),
                                                 html.Img(src='/assets/fan_off.png', style={'width': '100px', 'height': '100px', 'borderRadius': '50%', 'margin-bottom': '20px'}),
                                                 daq.BooleanSwitch(
                                                     id='fan-switch',
@@ -107,9 +123,9 @@ app.layout = html.Div(
                                                     disabled=True,
                                                     style={'font-family': 'Verdana', 'color': 'green', 'margin-bottom': '20px'}
                                                 ),
-                                                html.P('Fan Status:', style={'color': 'grey', 'textAlign': 'center', 'font-family': 'Verdana', 'margin-bottom': '20px'}),
+                                                html.P('Fan Status:', style={'color': 'white', 'textAlign': 'center', 'font-family': 'Verdana', 'margin-bottom': '20px'}),
                                             ],
-                                            style={'display': 'inline-block', 'border': '5px solid lightgrey', 'padding': '20px', 'borderRadius': '10px', 'text-align': 'center', 'width': '300px', 'height': '250px', 'backgroundColor': 'lightgrey'}
+                                            style={'display': 'inline-block', 'border': '5px solid lightgrey', 'padding': '20px', 'borderRadius': '10px', 'text-align': 'center', 'width': '350px', 'height': '285px', 'backgroundColor': 'rgb(129, 133, 137)', 'margin-right': '5px'}
                                         ),
                                     ],
                                     style={'display': 'flex', 'justifyContent': 'center', 'alignItems': 'center'}
@@ -138,11 +154,22 @@ app.layout = html.Div(
                 )
             ],
             style={'display': 'flex', 'flex': 1, 'justifyContent': 'flex-end'}
-        )
+        ),
+        
     ],
     style={'display': 'flex', 'flexDirection': 'row', 'height': '100vh', 'margin': 0, 'padding': 0, 'backgroundColor': 'rgb(52, 52, 52)'}
 )
 
+@app.callback(
+    Output("message", "is_open"), [Input("button_toggle", "n_clicks")]
+)
+def open_toast(n):
+    if n == 0:
+        return dash.no_update
+    return True
+
 # Run the Dash app
 if __name__ == '__main__':
     app.run_server(debug=True)
+
+
