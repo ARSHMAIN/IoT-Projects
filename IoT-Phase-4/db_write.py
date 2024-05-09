@@ -1,7 +1,9 @@
 import sqlite3
 import MQTT_Sub as mqtt_sub
+import app as app
 import time
 import os
+import subprocess
 
 current_dir = os.path.dirname(os.path.abspath(__file__))
 db_path = os.path.join(current_dir, 'Phase04.db')
@@ -29,5 +31,12 @@ try:
         else:
             print(f"No user found with RFID {mqtt_sub.get_rfid_data()}")
         time.sleep(1)
+
+        humidity = app.DHT11_Humi
+        temperature = app.DHT11_Temp
+        print(f"Humidity: {humidity}")
+        print(f"Temperature: {temperature}")
+        time.sleep(1)
+
 except KeyboardInterrupt:
     print("Process stopped by user")
