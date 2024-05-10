@@ -4,7 +4,7 @@ import dash_bootstrap_components as dbc
 import dash_daq as daq
 from dash import Dash, html, callback, Input, Output, dcc
 from dash import clientside_callback
-from db_write import get_user_thresholds_by_rfid
+import sqlite3
 
 import re
 import Email_System as Email
@@ -251,6 +251,19 @@ def open_toast(n):
 # Functions
 
 # Database
+current_dir = os.path.dirname(os.path.abspath(__file__))
+db_path = os.path.join(current_dir, 'Phase04.db')
+
+MQTT_Sub.start_mqtt_client()
+
+def get_user_thresholds_by_rfid(rfid_data):
+    conn = sqlite3.connect(db_path, timeout=10)
+    cursor = conn.cursor()
+    cursor.execute('SELECT * FROM UserThresholds WHERE RFID = ?', (rfid_data,))
+    user = cursor.fetchone()
+    conn.close()
+    return user
+
 @app.callback(
     [
         Output('user-id', 'value'),
