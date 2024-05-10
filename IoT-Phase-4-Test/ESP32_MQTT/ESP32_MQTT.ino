@@ -8,14 +8,14 @@ const char* ssid = "SM-A505W7965";
 const char* password = "angu5588";
 
 // MQTT broker details
-const char* mqtt_server = "192.168.187.68";
+const char* mqtt_server = "192.168.25.68";
 const int mqtt_port = 1883;
 
 WiFiClient espClient;
 PubSubClient client(espClient);
 
 // MQTT topics
-const char* lightsensor_topic = "light-sensor/brightness";
+const char* lightsensor_topic = "photoresistor/data";
 const char* led_status_topic = "led/status";
 const char* rfid_topic = "rfid/data";
 
@@ -89,10 +89,10 @@ void loop() {
   int lightIntensity = map(sensorValue, 0, 4095, 0, 100);
 
   Serial.print("Sensor Value: ");
-  Serial.println(brightness);
+  Serial.println(lightIntensity);
 
   // Publish brightness level to MQTT topic
-  String lightData = String(brightness);
+//   String lightData = String(brightness);
   client.publish(lightsensor_topic, lightIntensity.c_str());
 
   String statusLed = "";
