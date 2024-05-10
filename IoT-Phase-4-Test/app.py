@@ -3,6 +3,8 @@ import dash
 import dash_bootstrap_components as dbc
 import dash_daq as daq
 from dash import Dash, html, callback, Input, Output, dcc
+from dash import clientside_callback
+
 
 import re
 import Email_System as Email
@@ -10,8 +12,7 @@ import RPi.GPIO as GPIO
 import Freenove_DHT as DHT
 import MQTT_Sub as MQTT_Sub
 from time import sleep
-
-# Setup start
+ #Setup start
 GPIO.setmode(GPIO.BOARD)
 GPIO.setwarnings(False)
 
@@ -30,16 +31,36 @@ GPIO.setup(Motor3, GPIO.OUT)
 # Setup end
 
 
-app = Dash(__name__, external_stylesheets=[dbc.themes.BOOTSTRAP])
+app = Dash(__name__, external_stylesheets=[dbc.themes.BOOTSTRAP, dbc.icons.FONT_AWESOME])
 
 app.layout = html.Div(
     children=[
+        dbc.Nav(
+            [
+                html.Div(
+                    id='color-mode-switch',
+                    children=[
+                        html.H1("Smart Home"),
+                        html.Span(
+                            [
+                                dbc.Label(className="fa fa-moon", html_for="switch"),
+                                dbc.Switch(id="switch", value=True, className="d-inline-block ms-1", persistence=True),
+                                dbc.Label(className="fa fa-sun", html_for="switch"),
+                            ]
+                        ),
+                    ]
+                ),
+            ],
+            pills=True,
+            style={'position': 'fixed', 'top': 0, 'left': 0, 'right': 0, 'zIndex': 1000,}
+        ),
+        
         html.Div(
             id='profile',
             children=[
                 html.P('Profile',
                        style={'color': 'grey', 'textAlign': 'center', 'font-family': 'Verdana', 'fontSize': '40px'}),
-                html.Img(src='/assets/my_sunshine.jpg',
+                html.Img(src='/assets/profile.webp',
                          style={'width': '150px', 'height': '150px', 'borderRadius': '50%', 'margin': '0 auto',
                                 'display': 'block'}),
                 html.Label('User ID', style={'color': 'grey', 'margin-bottom': '5px', 'display': 'block',
@@ -63,9 +84,6 @@ app.layout = html.Div(
                                   'font-family': 'Verdana'}),
                 dcc.Input(id='light-intensity-threshold', type='number', value=0,
                           style={'width': '100%', 'margin-bottom': '20px', 'height': '50px'}),
-                html.Button('Submit Changes', id='submit-button', n_clicks=0,
-                            style={'width': '100%', 'height': '50px', 'backgroundColor': 'lightblue',
-                                   'margin-top': '20px', 'font-family': 'Verdana'}),
                 # Toast
                 dbc.Toast(
                     [html.P("Email has been sent!", className="mb-0")],
@@ -213,7 +231,9 @@ app.layout = html.Div(
                             children=[
                                 html.Img(src='/assets/bluetooth_png.png',
                                          style={'width': '100px', 'height': '35px', 'marginLeft': '10px'}),
-                                html.Div([
+                                html.Div(
+                                    [
+                                        html.Div([
                                     html.P('Bluetooth Devices Nearby',
                                            style={'color': 'white', 'textAlign': 'center', 'font-family': "Verdana",
                                                   'margin-top': '20px', 'backgroundColor': 'rgb(29, 119, 242)',
@@ -234,6 +254,9 @@ app.layout = html.Div(
                                               style={'width': '100px', 'margin-top': '20px', 'marginLeft': '20px',
                                                      'height': '30px', 'marginBottom': '15px',
                                                      'border': '5px solid rgb(29, 119, 242)', 'borderRadius': '10px'})
+                                    ]
+                                ),
+                                
                                 ], style={'display': 'flex', 'alignItems': 'center'})
                             ],
                             style={'flex': 1, 'padding': '20px'}
@@ -261,8 +284,18 @@ app.layout = html.Div(
             n_intervals=0
         ),
     ],
-    style={'display': 'flex', 'flexDirection': 'row', 'height': '100vh', 'margin': 0, 'padding': 0,
-           'backgroundColor': 'rgb(52, 52, 52)'}
+    style={'display': 'flex', 'flexDirection': 'row', 'height': '100vh', 'margin': 0, 'padding': 0}
+)
+
+clientside_callback(
+    """
+    function(switchOn) {
+        document.documentElement.setAttribute("data-bs-theme", switchOn ? "light" : "dark"); 
+        return window.dash_clientside.no_update;
+    }
+    """,
+    Output("switch", "value"),
+    Input("switch", "value"),
 )
 
 MQTT_Sub.start_mqtt_client()
@@ -354,4 +387,7 @@ def update_light_status_and_notify(light_intensity):
 
 # Run the Dash app
 if __name__ == '__main__':
-    app.run(host='192.168.187.68', port=8050, debug=True)
+    app.run(
+        host='192.168.187.68',
+        port=8050,
+        debug=True)
