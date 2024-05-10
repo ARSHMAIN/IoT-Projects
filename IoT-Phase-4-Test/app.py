@@ -9,7 +9,6 @@ from dash import clientside_callback
 import re
 import Email_System as Email
 import RPi.GPIO as GPIO
-import motor as motor
 import Freenove_DHT as DHT
 import MQTT_Sub as MQTT_Sub
 from time import sleep
@@ -61,7 +60,7 @@ app.layout = html.Div(
             children=[
                 html.P('Profile',
                        style={'color': 'grey', 'textAlign': 'center', 'font-family': 'Verdana', 'fontSize': '40px'}),
-                html.Img(src='/assets/profile.png',
+                html.Img(src='/assets/profile.webp',
                          style={'width': '150px', 'height': '150px', 'borderRadius': '50%', 'margin': '0 auto',
                                 'display': 'block'}),
                 html.Label('User ID', style={'color': 'grey', 'margin-bottom': '5px', 'display': 'block',
@@ -85,6 +84,7 @@ app.layout = html.Div(
                                   'font-family': 'Verdana'}),
                 dcc.Input(id='light-intensity-threshold', type='number', value=0,
                           style={'width': '100%', 'margin-bottom': '20px', 'height': '50px'}),
+                
             ],
             style={'flex': 1, 'width': '200%', 'borderRadius': '10px', 'padding': '20px', 'textAlign': 'center', }
         ),
@@ -157,6 +157,7 @@ app.layout = html.Div(
                                                     src='/assets/led_off.png',
                                                          style={'width': '100px', 'height': '100px',
                                                                 'borderRadius': '50%', 'margin-bottom': '20px'}),
+                                                
                                                 html.P('Light Intensity:',
                                                        id='light-intensity',
                                                        style={'color': 'white', 'textAlign': 'center',
@@ -181,9 +182,8 @@ app.layout = html.Div(
                                                     src='/assets/fan_off.png',
                                                          style={'width': '100px', 'height': '100px',
                                                                 'borderRadius': '50%', 'margin-bottom': '20px'}),
-                                                html.P('Fan Status:',
-                                                       id='fan-status'
-                                                       ,style={'color': 'white', 'textAlign': 'center',
+                                              
+                                                html.P('Fan Status:', style={'color': 'white', 'textAlign': 'center',
                                                                              'font-family': 'Verdana',
                                                                              'margin-bottom': '20px'}),
                                             ],
@@ -207,11 +207,11 @@ app.layout = html.Div(
         ),
         dbc.Toast(
             "Email regarding",
-            id="email-toast-light",
+            id="email-toast",
             header="New Email",
             is_open=False,
             dismissable=True,
-            duration=1000,
+            duration=4000,
             icon="success",
             # top: 66 positions the toast below the navbar
             style={"position": "fixed", "top": 20, "right": 20, "width": 350},
@@ -238,6 +238,16 @@ clientside_callback(
 
 MQTT_Sub.start_mqtt_client()
 
+@callback(
+    Output("message", "is_open"),
+    [Input("button_toggle", "n_clicks")]
+)
+def open_toast(n):
+    if n == 0:
+        return dash.no_update
+    return True
+
+
 # Functions
 
 # Motor
@@ -250,35 +260,23 @@ def update_gauges(n):
     dht = DHT.DHT(DHTPin)
     while True:
         dht.readDHT11()
-        print(f'Humidity: {dht.humidity}', f'Temperature: {dht.temperature}')
+        # print(f'Humidity: {dht.humidity}', f'Temperature: {dht.temperature}')
         return [dht.humidity, dht.temperature]
 
 @callback(
-    [Output('fan-img', 'src'),
-     Output('fan-status', 'children'),
-     Output('email-toast', 'children'),
-     Output('email-toast', 'is_open')],
-    [Input('temperature-gauge', 'value')],
-
+    [Output('fan', 'src')],
+    [Input('temperature-gauge', 'value')]
 )
-def fan_control(temperature):
+def send_email(temperature):
     send_response = Email.send_email_fan(temperature)
-    if not send_response:
-        return ['assets/fan_off.png', 'Fan Status: off', "Email regarding fan status", True]
-        # print(send_response)
+    print(send_response)
 
     receive_response = Email.receive_email_fan()
-    # print(receive_response)
-
+    print(receive_response)
 
     if not receive_response or ('Error' in str(receive_response)):
-        print('fan off')
-        motor.motor_off(Motor1)
-        return ['assets/fan_off.png', 'Fan Status: off', "", False]
-    else:
-        print('fan on')
-        motor.motor_on(Motor1, Motor2, Motor3)
-        return ['assets/fan_on.png', 'Fan Status: on', "", False]
+        return ['assets/fan off.png']
+    return ['assets/fan on.png']
 
 
 # Photoresistor
@@ -303,12 +301,12 @@ def update_light_status_and_notify(light_intensity):
     match = re.search(r'\d+', light_intensity)
     # Convert to Int
     light_intensity = int(match.group())
-    # print(int(match.group()))
+    print(int(match.group()))
 
     if light_intensity < 40:
         if not is_email_sent:
-            # Email.send_email_light()
-            # print("Email sent")
+            Email.send_email_light()
+            print("Email sent")
             is_email_sent = True
             GPIO.output(LED_PIN, GPIO.HIGH)
             return ["assets/led_on.png", "Light Status: On", "Email regarding light status", True]
@@ -317,7 +315,7 @@ def update_light_status_and_notify(light_intensity):
             return ["assets/led_on.png", "Light Status: On",  "Email regarding light status", False]
     else:
         if is_email_sent:
-            # print("Email not sent")
+            print("Email not sent")
             is_email_sent = False
             GPIO.output(LED_PIN, GPIO.LOW)
             return ["assets/led_off.png", "Light Status: Off",  "Email regarding light status", False]
@@ -327,4 +325,7 @@ def update_light_status_and_notify(light_intensity):
 
 # Run the Dash app
 if __name__ == '__main__':
-    app.run(host='localhost', port=8050, debug=True)
+    app.run(
+        host='localhost',
+        port=8050,
+        debug=True)
