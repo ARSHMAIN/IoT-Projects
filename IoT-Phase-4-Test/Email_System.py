@@ -44,7 +44,7 @@ def send_email_fan(temperature):
     try:
         if emailStatus:
             return emailStatus
-        elif temperature > 22 and not emailStatus:
+        elif temperature > 30 and not emailStatus:
             server = smtplib.SMTP('smtp.gmail.com', 587)
             server.starttls()
             server.login(sender, password)
@@ -56,11 +56,13 @@ def send_email_fan(temperature):
     except Exception as e:
         return "Error sending email:", str(e)
 
+
 def receive_email_fan():
     global sender, password, recipient, receiveStatus
-    # print(receiveStatus)
+
     if receiveStatus:
         return receiveStatus
+
     try:
         mail = imaplib.IMAP4_SSL("imap.gmail.com")
         mail.login(sender, password)
@@ -73,36 +75,47 @@ def receive_email_fan():
         if not data[0]:
             return False
 
-        ids = data[0]
-        id_list = ids.split()
+        ids = data[0].split()
+        # Fetch the latest unseen email
+        latest_email_id = ids[-1]
 
-        # Fetch the first unseen email
-        first_email_id = id_list[0]
-
-        result, data = mail.fetch(first_email_id, "(RFC822)")
+        result, data = mail.fetch(latest_email_id, "(RFC822)")
         raw_email = data[0][1]
 
         email_message = email.message_from_bytes(raw_email)
         print("Subject:", email_message['Subject'])
         print("From:", email_message['From'])
-        print("Body:")
-        for part in email_message.walk():
-            content_type = part.get_content_type()
-            str(part.get("Content-Disposition"))
 
-            if "text/plain" in content_type:
-                body = part.get_payload(decode=True)
-                lowercase_body = body.decode('utf-8').lower()
-                print(lowercase_body)
-                if 'yes' in lowercase_body:
-                    receiveStatus = True
-                    # mail.store(first_email_id, '+FLAGS', '\\Seen')
-                    mail.store(first_email_id, '+FLAGS', '\\Deleted')
-                else:
-                    receiveStatus = False
+        # Extract body
+        body = extract_body_from_email(email_message)
+        print("Body:")
+
+        # Check if 'yes' is in the body
+        if 'yes' in body.lower():
+            print("yes")
+            receiveStatus = True
+        else:
+            print("no")
+            receiveStatus = False
+
         mail.close()
         mail.logout()
         return receiveStatus
+
     except Exception as e:
         print("Error receiving email:", e)
         return False
+
+
+def extract_body_from_email(email_message):
+    body = ""
+    if email_message.is_multipart():
+        for part in email_message.walk():
+            content_type = part.get_content_type()
+            if "text/plain" in content_type:
+                body += part.get_payload(decode=True).decode('utf-8', 'ignore')
+    else:
+        body = email_message.get_payload(decode=True).decode('utf-8', 'ignore')
+
+    return body
+

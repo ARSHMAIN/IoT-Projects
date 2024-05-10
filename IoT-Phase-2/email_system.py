@@ -69,9 +69,10 @@ def receive_email():
         for part in email_message.walk():
             content_type = part.get_content_type()
             str(part.get("Content-Disposition"))
-
+            print(str(part.get("Content-Disposition")))
             if "text/plain" in content_type:
                 body = part.get_payload(decode=True)
+                print(body)
                 lowercase_body = body.decode('utf-8').lower()
                 print(lowercase_body)
                 if 'yes' in lowercase_body:
