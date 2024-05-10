@@ -3,7 +3,6 @@ import MQTT_Sub as mqtt_sub
 import app as app
 import time
 import os
-import subprocess
 
 current_dir = os.path.dirname(os.path.abspath(__file__))
 db_path = os.path.join(current_dir, 'Phase04.db')
@@ -14,29 +13,55 @@ def get_user_by_rfid():
     rfid_data = mqtt_sub.get_rfid_data()
     print(f"RFID data received: {rfid_data}")
     if not rfid_data:
-        return None
+        return None, None
     
-    conn = sqlite3.connect(db_path)
+    conn = sqlite3.connect(db_path, timeout=10)
     cursor = conn.cursor()
-    cursor.execute('SELECT Name FROM UserThresholds WHERE RFID = ?', (rfid_data,))
+    cursor.execute('SELECT * FROM UserThresholds WHERE RFID = ?', (rfid_data,))
     user = cursor.fetchone()
     conn.close()
-    return user[0] if user else None
+    return rfid_data, list(user) if user else None
+
+def get_user_thresholds_by_rfid(rfid_data):
+    conn = sqlite3.connect(db_path, timeout=10)
+    cursor = conn.cursor()
+    cursor.execute('SELECT * FROM UserThresholds WHERE RFID = ?', (rfid_data,))
+    user = cursor.fetchone()
+    conn.close()
+    return user
 
 try:
-    while True:
-        user = get_user_by_rfid()
-        if user:
-            print(f"User with RFID {mqtt_sub.get_rfid_data()} found: {user}")
-        else:
-            print(f"No user found with RFID {mqtt_sub.get_rfid_data()}")
-        time.sleep(1)
+    conn = sqlite3.connect(db_path, timeout=10)
+    cursor = conn.cursor()
 
-        humidity = app.DHT11_Humi
-        temperature = app.DHT11_Temp
-        print(f"Humidity: {humidity}")
-        print(f"Temperature: {temperature}")
+    while True:
+        rfid_data, _ = get_user_by_rfid()
+        if rfid_data:
+            user = get_user_thresholds_by_rfid(rfid_data)
+            if user:
+                print(f"User with RFID {rfid_data} found: {user[2]}")
+                current_temp = app.get_temp_data()
+                current_humidity = app.get_humi_data()
+                current_light_intensity = int(mqtt_sub.light_brightness)
+
+                if current_temp > user[3] or current_humidity > user[4] or current_light_intensity > user[5]:
+                    print("Updating database.")
+                    cursor.execute('UPDATE UserThresholds SET TempThreshold = ?, HumidityThreshold = ?, LightIntensityThreshold = ? WHERE RFID = ?',
+                                (int(current_temp), int(current_humidity), int(current_light_intensity), rfid_data))
+                    conn.commit()
+
+                else:
+                    print("Current values are not over the currently stored thresholds. Skipping update.")
+            else:
+                print("No user found with scanned RFID.")
+        else:
+            print("No RFID data received.")
+
         time.sleep(1)
 
 except KeyboardInterrupt:
     print("Process stopped by user")
+finally:
+    conn.close()
+
+
