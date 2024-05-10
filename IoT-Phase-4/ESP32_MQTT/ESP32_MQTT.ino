@@ -22,6 +22,7 @@ const char* rfid_topic = "rfid/data";
 const int photoresistorPin = 34;
 const int ledPin = 13;
 
+// RFID pins
 #define SS_PIN   2  // SDA
 #define RST_PIN  23 // RST
 #define SCK_PIN  18 // SCK
