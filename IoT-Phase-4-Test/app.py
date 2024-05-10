@@ -327,4 +327,4 @@ def update_light_status_and_notify(light_intensity):
 
 # Run the Dash app
 if __name__ == '__main__':
-    app.run(host='192.168.25.68', port=8050, debug=True)
+    app.run(host='localhost', port=8050, debug=True)

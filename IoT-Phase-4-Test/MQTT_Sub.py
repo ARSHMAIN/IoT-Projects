@@ -6,13 +6,13 @@ rfid_data = ''
 
 def on_connect(client, userdata, flags, reason_code, properties):
     print(f"Connected with result code {reason_code}")
-    client.subscribe("photoresistor/data")
+    client.subscribe("light-sensor/brightness")
     client.subscribe("led/status")
     client.subscribe("rfid/data")
 
 def on_message(client, userdata, msg):
     global led_status, light_brightness, rfid_data
-    if msg.topic == "photoresistor/data":
+    if msg.topic == "light-sensor/brightness":
         light_brightness = msg.payload.decode()
     elif msg.topic == "led/status":
         led_status = msg.payload.decode()
@@ -24,7 +24,7 @@ def start_mqtt_client():
     mqttc.on_connect = on_connect
     mqttc.on_message = on_message
 
-    mqttc.connect("192.168.25.68", 1883, 60)
+    mqttc.connect("localhost", 1883, 60)
 
     mqttc.loop_start()
 
