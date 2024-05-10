@@ -47,22 +47,6 @@ app.layout = html.Div(
                 html.Label('Light Intensity Threshold', style={'color': 'grey', 'margin-bottom': '5px', 'display': 'block', 'font-family': 'Verdana'}),
                 dcc.Input(id='light-intensity-threshold', type='number', value=0, style={'width': '100%', 'margin-bottom': '20px', 'height': '50px'}),
                 html.Button('Submit Changes', id='submit-button', n_clicks=0, style={'width': '100%', 'height': '50px', 'backgroundColor': 'lightblue', 'margin-top': '20px', 'font-family': 'Verdana'}),
-                # Toast
-                dbc.Toast(
-                    [html.P("Email has been sent!", className="mb-0")],
-                    id="message",
-                    duration=3000,
-                    is_open=False,
-                    style={'position': 'fixed', 'top': '100px', 'left': '20px', 'width': '300px'}
-                ),
-                dbc.Button(
-                    "Email Status",
-                    id="button_toggle",
-                    color="secondary",
-                    className="mb-3",
-                    n_clicks=0,
-                    style={'position': 'fixed', 'top': '20px', 'left': '20px'}
-                ),
             ],
             style={'flex': 1, 'width': '200%', 'borderRadius': '10px',  'padding': '20px', 'textAlign': 'center', }
         ),
@@ -194,9 +178,6 @@ clientside_callback(
     Input("switch", "value"),
 )
 
-@app.callback(
-    Output("message", "is_open"), [Input("button_toggle", "n_clicks")]
-)
 
 def open_toast(n):
     if n == 0:
