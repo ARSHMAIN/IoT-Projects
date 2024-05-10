@@ -5,7 +5,6 @@ import dash_daq as daq
 from dash import Dash, html, callback, Input, Output, dcc
 from dash import clientside_callback
 from db_write import get_user_thresholds_by_rfid
-import MQTT_Sub as mqtt_sub
 
 import re
 import Email_System as Email
@@ -31,7 +30,6 @@ GPIO.setup(Motor2, GPIO.OUT)
 GPIO.setup(Motor3, GPIO.OUT)
 # Setup end
 
-user_data = get_user_thresholds_by_rfid('RFID')
 
 app = Dash(__name__, external_stylesheets=[dbc.themes.BOOTSTRAP, dbc.icons.FONT_AWESOME])
 
@@ -62,7 +60,9 @@ app.layout = html.Div(
             children=[
                 html.P('Profile',
                        style={'color': 'grey', 'textAlign': 'center', 'font-family': 'Verdana', 'fontSize': '40px'}),
-                # Modify the value property of each dcc.Input element to the corresponding user data
+                html.Img(src='/assets/profile.webp',
+                         style={'width': '150px', 'height': '150px', 'borderRadius': '50%', 'margin': '0 auto',
+                                'display': 'block'}),
                 html.Label('User ID', style={'color': 'grey', 'margin-bottom': '5px', 'display': 'block',
                                              'font-family': 'Verdana'}),
                 dcc.Input(id='user-id', type='text', value='',
@@ -84,9 +84,11 @@ app.layout = html.Div(
                                   'font-family': 'Verdana'}),
                 dcc.Input(id='light-intensity-threshold', type='number', value=0,
                           style={'width': '100%', 'margin-bottom': '20px', 'height': '50px'}),
+                
             ],
             style={'flex': 1, 'width': '200%', 'borderRadius': '10px', 'padding': '20px', 'textAlign': 'center', }
         ),
+
         html.Div(
             id='phases-container',
             children=[
@@ -222,21 +224,6 @@ app.layout = html.Div(
     ],
     style={'display': 'flex', 'flexDirection': 'row', 'height': '100vh', 'margin': 0, 'padding': 0}
 )
-@callback(
-    Output('user-id', 'value'),
-    Output('name', 'value'),
-    Output('temp-threshold', 'value'),
-    Output('humidity-threshold', 'value'),
-    Output('light-intensity-threshold', 'value'),
-    Input('mqtt-subject', 'data')
-)
-def update_profile(rfid_data):
-    if not rfid_data:
-        return '', '', 0, 0, 0
-    user_data = get_user_thresholds_by_rfid(rfid_data)
-    if not user_data:
-        return '', '', 0, 0, 0
-    return user_data
 
 clientside_callback(
     """
@@ -262,6 +249,26 @@ def open_toast(n):
 
 
 # Functions
+
+# Database
+@app.callback(
+    [
+        Output('user-id', 'value'),
+        Output('name', 'value'),
+        Output('temp-threshold', 'value'),
+        Output('humidity-threshold', 'value'),
+        Output('light-intensity-threshold', 'value')
+    ],
+    Input('interval-component', 'n_intervals')
+)
+def update_profile_values(n):
+    rfid_data = MQTT_Sub.get_rfid_data()
+    user = get_user_thresholds_by_rfid(rfid_data)
+    if user:
+        return user[0], user[1], user[3], user[4], user[5]
+    else:
+        return '', '', 0, 0, 0
+
 
 # Motor
 @callback(
