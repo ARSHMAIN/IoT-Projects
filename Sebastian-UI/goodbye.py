@@ -146,13 +146,8 @@ app.layout = html.Div(
                             children=[
                                 html.Img(src='/assets/bluetooth_png.png', style={'width': '100px', 'height': '35px', 'marginLeft': '10px'}),
                                 html.Div([
-                                    html.P('Bluetooth Devices Nearby', style={'color': 'white', 'textAlign': 'center', 'font-family': "Verdana", 'margin-top': '20px', 'backgroundColor': 'rgb(29, 119, 242)', 'width': '300px', 'height': '40px', 'lineHeight': '40px', 'borderRadius': '10px'}),
-                                    dcc.Input(id='bluetooth-devices', type='text', value='', style={'width': '100px', 'margin-top': '20px', 'marginLeft': '20px', 'height': '30px', 'marginBottom': '15px', 'border': '5px solid rgb(29, 119, 242)', 'borderRadius': '10px'})
+                                    html.P('Bluetooth Devices Nearby: ', style={'color': 'white', 'textAlign': 'center', 'font-family': "Verdana", 'margin-top': '20px', 'backgroundColor': 'rgb(29, 119, 242)', 'width': '300px', 'height': '40px', 'lineHeight': '40px', 'borderRadius': '10px'}),
                                 ], style={'display': 'flex', 'alignItems': 'center'}),
-                                html.Div([
-                                    html.P('RSSI Threshold (dBm)', style={'color': 'white', 'textAlign': 'center', 'font-family': "Verdana", 'margin-top': '20px', 'backgroundColor': 'rgb(29, 119, 242)', 'width': '300px', 'height': '40px', 'lineHeight': '40px', 'borderRadius': '10px'}),
-                                    dcc.Input(id='rssi-threshold', type='number', value=0, style={'width': '100px', 'margin-top': '20px', 'marginLeft': '20px', 'height': '30px', 'marginBottom': '15px', 'border': '5px solid rgb(29, 119, 242)', 'borderRadius': '10px'})
-                                ], style={'display': 'flex', 'alignItems': 'center'})
                             ],
                             style={'flex': 1,  'padding': '20px'}
                         )

@@ -6,7 +6,7 @@ from dash import Dash, html, callback, Input, Output, dcc
 from dash import clientside_callback
 import sqlite3
 import os
-
+import bluetooth
 import re
 import Email_System as Email
 import RPi.GPIO as GPIO
@@ -18,6 +18,7 @@ GPIO.setmode(GPIO.BOARD)
 GPIO.setwarnings(False)
 
 is_email_sent = False
+devices_nearby = 0
 
 DHTPin = 11  # GPIO 17
 LED_PIN = 40  # GPIO 21
@@ -200,6 +201,17 @@ app.layout = html.Div(
                             ],
                             style={'flex': 1, 'padding': '20px'}
                         ),
+                        html.Div(
+                            id='phase4',
+                            children=[
+                                html.Img(src='/assets/bluetooth_png.png', style={'width': '100px', 'height': '35px', 'marginLeft': '10px'}),
+                                html.Div([
+                                    html.P('Bluetooth Devices Nearby: ', style={'color': 'white', 'textAlign': 'center', 'font-family': "Verdana", 'margin-top': '20px', 'backgroundColor': 'rgb(29, 119, 242)', 'width': '300px', 'height': '40px', 'lineHeight': '40px', 'borderRadius': '10px'}),
+                                    html.P(id='bluetooth_device_count', children=0, style={'color': 'white', 'textAlign': 'center', 'font-family': "Verdana", 'margin-top': '20px', 'width': '300px', 'height': '40px', 'lineHeight': '40px', 'borderRadius': '10px'}),
+                                ], style={'display': 'flex', 'alignItems': 'center'}),
+                            ],
+                            style={'flex': 1,  'padding': '20px'}
+                        )
                     ],
                     style={'display': 'flex', 'flexDirection': 'column', 'flex': 1}
                 )
@@ -263,6 +275,17 @@ def get_user_thresholds_by_rfid(rfid_data):
     user = cursor.fetchone()
     conn.close()
     return user
+
+@callback(
+        Output('bluetooth_devices_count', 'children'),
+        Input('interval-component', 'n_intervals')
+)
+
+def bluetooth_device_count(n):
+    global devices_nearby
+    bluetooth_devices_nearby = bluetooth.discover_devices()
+    devices_nearby = bluetooth_devices_nearby
+    return f"Bluetooth Devices: {len(devices_nearby)}"
 
 @app.callback(
     [
