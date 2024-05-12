@@ -4,9 +4,7 @@ import dash_bootstrap_components as dbc
 import dash_daq as daq
 from dash import Dash, html, callback, Input, Output, dcc
 from dash import clientside_callback
-import sqlite3
-import os
-import bluetooth
+#import bluetooth
 import re
 import Email_System as Email
 import RPi.GPIO as GPIO
@@ -15,6 +13,7 @@ import MQTT_Sub as MQTT_Sub
 import threading
 from time import sleep
 from threading import Thread
+from dash import State
 
 # Setup start
 GPIO.setmode(GPIO.BOARD)
@@ -89,7 +88,11 @@ app.layout = html.Div(
                                   'font-family': 'Verdana'}),
                 dcc.Input(id='light-intensity-threshold', type='number', value=0,
                           style={'width': '100%', 'margin-bottom': '20px', 'height': '50px'}),
-                
+
+                html.Button('Submit', id='submit-button', n_clicks=0,
+                            style={'width': '100%', 'margin-top': '20px', 'height': '50px',
+                                   'backgroundColor': 'rgb(29, 119, 242)', 'color': 'white',
+                                   'borderRadius': '10px', 'fontFamily': 'Verdana'}),
             ],
             style={'flex': 1, 'width': '200%', 'borderRadius': '10px', 'padding': '20px', 'textAlign': 'center', }
         ),
@@ -271,22 +274,8 @@ def open_toast(n):
 
 # Functions
 
-# Database
-current_dir = os.path.dirname(os.path.abspath(__file__))
-db_path = os.path.join(current_dir, 'Phase04.db')
-
-
-def get_user_thresholds_by_rfid(rfid_data):
-    conn = sqlite3.connect(db_path, timeout=10)
-    cursor = conn.cursor()
-    cursor.execute('SELECT * FROM UserThresholds WHERE RFID = ?', (rfid_data,))
-    print(f"User with RFID {rfid_data} found: {user[2]}")
-    user = cursor.fetchone()
-    conn.close()
-    return user
-
-
-def scan_devices():
+# Bluetooth
+'''def scan_devices():
     global devices_nearby
     while True:
         nearby_devices = bluetooth.discover_devices(duration=2, lookup_names=False, lookup_class=True)
@@ -303,26 +292,25 @@ scan_thread.start()
     [Input('interval-component', 'n_intervals')])
 def update_device_count(n):
     return f"Bluetooth devices nearby: {devices_nearby}"
+'''
+    
+# Database
 
-
+# Form
 @app.callback(
-    [
-        Output('user-id', 'value'),
-        Output('name', 'value'),
-        Output('temp-threshold', 'value'),
-        Output('humidity-threshold', 'value'),
-        Output('light-intensity-threshold', 'value')
-    ],
-    Input('interval-component', 'n_intervals')
+    Output('output', 'children'),
+    Input('submit-button', 'n_clicks'),
+    State('user-id', 'value'),
+    State('name', 'value'),
+    State('temp-threshold', 'value'),
+    State('humidity-threshold', 'value'),
+    State('light-intensity-threshold', 'value')
 )
-def update_profile_values(n):
-    rfid_data = MQTT_Sub.get_rfid_data()
-    user = get_user_thresholds_by_rfid(rfid_data)
-    if user:
-        return user[0], user[1], user[3], user[4], user[5]
+def submit_form(n_clicks, user_id, name, temp_threshold, humidity_threshold, light_intensity_threshold):
+    if n_clicks > 0:
+        return f'User ID: {user_id}, Name: {name}, Temp. Threshold: {temp_threshold}, Humidity Threshold: {humidity_threshold}, Light Intensity Threshold: {light_intensity_threshold}'
     else:
-        return '', '', 0, 0, 0
-
+        return ''
 
 # Motor
 @callback(
