@@ -14,6 +14,7 @@ import threading
 from time import sleep
 from threading import Thread
 from dash import State
+import db_write as db
 
 # Setup start
 GPIO.setmode(GPIO.BOARD)
@@ -295,8 +296,19 @@ def update_device_count(n):
 '''
     
 # Database
+@app.callback(
+    [Output('temp-threshold', 'value'),
+     Output('humidity-threshold', 'value'),
+     Output('light-intensity-threshold', 'value')],
+    Input('user-id', 'value')
+)
+def update_thresholds(user_id):
+    user = db.get_user_thresholds_by_rfid(user_id)
+    if user:
+        return user[3], user[4], user[5]
+    else:
+        return 0, 0, 0
 
-# Form
 @app.callback(
     Output('output', 'children'),
     Input('submit-button', 'n_clicks'),
@@ -308,6 +320,7 @@ def update_device_count(n):
 )
 def submit_form(n_clicks, user_id, name, temp_threshold, humidity_threshold, light_intensity_threshold):
     if n_clicks > 0:
+        db.update_user_thresholds(user_id, temp_threshold, humidity_threshold, light_intensity_threshold)
         return f'User ID: {user_id}, Name: {name}, Temp. Threshold: {temp_threshold}, Humidity Threshold: {humidity_threshold}, Light Intensity Threshold: {light_intensity_threshold}'
     else:
         return ''
