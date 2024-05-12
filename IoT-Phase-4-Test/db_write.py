@@ -26,7 +26,7 @@ def update_user_thresholds(rfid_data, temp, humidity, light_intensity):
     conn = sqlite3.connect(db_path, timeout=10)
     cursor = conn.cursor()
     cursor.execute('UPDATE UserThresholds SET TempThreshold = ?, HumidityThreshold = ?, LightIntensityThreshold = ? WHERE RFID = ?',
-                    (temp, humidity, light_intensity, rfid_data))
+                    (int(temp), int(humidity), int(light_intensity), rfid_data))
     conn.commit()
     conn.close()
 
@@ -59,3 +59,11 @@ def get_user_thresholds_by_rfid(rfid_data):
     user = cursor.fetchone()
     conn.close()
     return user
+
+def get_user_name_by_rfid(rfid_data):
+    conn = sqlite3.connect(db_path, timeout=10)
+    cursor = conn.cursor()
+    cursor.execute('SELECT Name FROM UserThresholds WHERE RFID = ?', (rfid_data,))
+    name = cursor.fetchone()
+    conn.close()
+    return name

@@ -68,10 +68,6 @@ app.layout = html.Div(
                 html.Img(src='/assets/profile.webp',
                          style={'width': '150px', 'height': '150px', 'borderRadius': '50%', 'margin': '0 auto',
                                 'display': 'block'}),
-                html.Label('User ID', style={'color': 'grey', 'margin-bottom': '5px', 'display': 'block',
-                                             'font-family': 'Verdana'}),
-                dcc.Input(id='user-id', type='text', value='',
-                          style={'width': '100%', 'margin-bottom': '20px', 'height': '50px'}),
                 html.Label('Name', style={'color': 'grey', 'margin-bottom': '5px', 'display': 'block',
                                           'font-family': 'Verdana'}),
                 dcc.Input(id='name', type='text', value='',
@@ -296,32 +292,42 @@ def update_device_count(n):
 '''
     
 # Database
+current_rfid = None
+
 @app.callback(
-    [Output('temp-threshold', 'value'),
+    [Output('name', 'value'),
+     Output('temp-threshold', 'value'),
      Output('humidity-threshold', 'value'),
      Output('light-intensity-threshold', 'value')],
-    Input('user-id', 'value')
+    [Input('interval-component', 'n_intervals')],
 )
-def update_thresholds(user_id):
-    user = db.get_user_thresholds_by_rfid(user_id)
-    if user:
-        return user[3], user[4], user[5]
-    else:
-        return 0, 0, 0
+def update_profile(n_intervals):
+    global current_rfid
+    rfid_data, _ = db.get_user_by_rfid()  # Correctly call the function
+    if rfid_data and rfid_data != current_rfid:  # Check if the scanned RFID is different from the current one
+        current_rfid = rfid_data  # Update the current RFID
+        user = db.get_user_thresholds_by_rfid(rfid_data)
+        if user:
+            return user[2], user[3], user[4], user[5]
+    return dash.no_update, dash.no_update, dash.no_update, dash.no_update  # Return no_update to prevent updating the textboxes
 
 @app.callback(
     Output('output', 'children'),
     Input('submit-button', 'n_clicks'),
-    State('user-id', 'value'),
     State('name', 'value'),
     State('temp-threshold', 'value'),
     State('humidity-threshold', 'value'),
     State('light-intensity-threshold', 'value')
 )
-def submit_form(n_clicks, user_id, name, temp_threshold, humidity_threshold, light_intensity_threshold):
-    if n_clicks > 0:
-        db.update_user_thresholds(user_id, temp_threshold, humidity_threshold, light_intensity_threshold)
-        return f'User ID: {user_id}, Name: {name}, Temp. Threshold: {temp_threshold}, Humidity Threshold: {humidity_threshold}, Light Intensity Threshold: {light_intensity_threshold}'
+def submit_form(n_clicks, name, temp_threshold, humidity_threshold, light_intensity_threshold):
+    if n_clicks and n_clicks > 0:
+        print(f"Submit button clicked. n_clicks: {n_clicks}")
+        rfid_data, _ = db.get_user_by_rfid()
+        if rfid_data:
+            db.update_user_thresholds(rfid_data, temp_threshold, humidity_threshold, light_intensity_threshold)
+            return f'User RFID: {rfid_data}, Name: {name}, Temp. Threshold: {temp_threshold}, Humidity Threshold: {humidity_threshold}, Light Intensity Threshold: {light_intensity_threshold}'
+        else:
+            return 'No RFID data found.'
     else:
         return ''
 
