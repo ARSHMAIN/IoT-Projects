@@ -12,12 +12,16 @@ import Email_System as Email
 import RPi.GPIO as GPIO
 import Freenove_DHT as DHT
 import MQTT_Sub as MQTT_Sub
+import threading
 from time import sleep
- #Setup start
+from threading import Thread
+
+# Setup start
 GPIO.setmode(GPIO.BOARD)
 GPIO.setwarnings(False)
 
 is_email_sent = False
+RSSI_THRESHOLD = -80
 devices_nearby = 0
 
 DHTPin = 11  # GPIO 17
@@ -31,7 +35,6 @@ GPIO.setup(Motor1, GPIO.OUT)
 GPIO.setup(Motor2, GPIO.OUT)
 GPIO.setup(Motor3, GPIO.OUT)
 # Setup end
-
 
 app = Dash(__name__, external_stylesheets=[dbc.themes.BOOTSTRAP, dbc.icons.FONT_AWESOME])
 
@@ -156,10 +159,9 @@ app.layout = html.Div(
                                                          style={'color': 'white', 'textAlign': 'center',
                                                                 'font-family': 'Verdana'}),
                                                 html.Img(id='led-img',
-                                                    src='/assets/led_off.png',
+                                                         src='/assets/led_off.png',
                                                          style={'width': '100px', 'height': '100px',
                                                                 'borderRadius': '50%', 'margin-bottom': '20px'}),
-                                                
                                                 html.P('Light Intensity:',
                                                        id='light-intensity',
                                                        style={'color': 'white', 'textAlign': 'center',
@@ -167,8 +169,8 @@ app.layout = html.Div(
                                                 html.P('Light Status: Off',
                                                        id='light-status',
                                                        style={'color': 'white', 'textAlign': 'center',
-                                                                               'font-family': 'Verdana',
-                                                                               'margin-bottom': '20px'}),
+                                                              'font-family': 'Verdana',
+                                                              'margin-bottom': '20px'}),
                                             ],
                                             style={'display': 'inline-block', 'border': '5px solid lightgrey',
                                                    'padding': '20px', 'borderRadius': '10px', 'text-align': 'center',
@@ -179,12 +181,11 @@ app.layout = html.Div(
                                         html.Div(
                                             [
                                                 html.Div("Fan Control", style={'color': 'white', 'textAlign': 'center',
-                                                                               'font-family': 'Verdana'}),
+                                                                              'font-family': 'Verdana'}),
                                                 html.Img(id='fan-img',
-                                                    src='/assets/fan_off.png',
+                                                         src='/assets/fan_off.png',
                                                          style={'width': '100px', 'height': '100px',
                                                                 'borderRadius': '50%', 'margin-bottom': '20px'}),
-                                              
                                                 html.P('Fan Status:', style={'color': 'white', 'textAlign': 'center',
                                                                              'font-family': 'Verdana',
                                                                              'margin-bottom': '20px'}),
@@ -204,14 +205,24 @@ app.layout = html.Div(
                         html.Div(
                             id='phase4',
                             children=[
-                                html.Img(src='/assets/bluetooth_png.png', style={'width': '100px', 'height': '35px', 'marginLeft': '10px'}),
+                                html.Img(src='/assets/bluetooth_png.png',
+                                         style={'width': '100px', 'height': '35px', 'marginLeft': '10px'}),
                                 html.Div([
-                                    html.P('Bluetooth Devices Nearby: ', style={'color': 'white', 'textAlign': 'center', 'font-family': "Verdana", 'margin-top': '20px', 'backgroundColor': 'rgb(29, 119, 242)', 'width': '300px', 'height': '40px', 'lineHeight': '40px', 'borderRadius': '10px'}),
-                                    html.P(id='bluetooth_device_count', children=0, style={'color': 'white', 'textAlign': 'center', 'font-family': "Verdana", 'margin-top': '20px', 'width': '300px', 'height': '40px', 'lineHeight': '40px', 'borderRadius': '10px'}),
+                                    html.Div(id="device_count",
+                                             style={'color': 'white', 'textAlign': 'center', 'font-family': "Verdana",
+                                                    'margin-top': '20px', 'backgroundColor': 'rgb(29, 119, 242)',
+                                                    'width': '300px', 'height': '40px', 'lineHeight': '40px',
+                                                    'borderRadius': '10px'}),
+                                    dcc.Interval(
+                                        id="interval-component",
+                                        interval=2000,
+                                        n_intervals=0
+                                    )
                                 ], style={'display': 'flex', 'alignItems': 'center'}),
                             ],
-                            style={'flex': 1,  'padding': '20px'}
+                            style={'flex': 1, 'padding': '20px'}
                         )
+
                     ],
                     style={'display': 'flex', 'flexDirection': 'column', 'flex': 1}
                 )
@@ -241,8 +252,8 @@ app.layout = html.Div(
 clientside_callback(
     """
     function(switchOn) {
-        document.documentElement.setAttribute("data-bs-theme", switchOn ? "light" : "dark"); 
-        return window.dash_clientside.no_update;
+    document.documentElement.setAttribute("data-bs-theme", switchOn ? "light" : "dark");
+    return window.dash_clientside.no_update;
     }
     """,
     Output("switch", "value"),
@@ -251,10 +262,7 @@ clientside_callback(
 
 MQTT_Sub.start_mqtt_client()
 
-@callback(
-    Output("message", "is_open"),
-    [Input("button_toggle", "n_clicks")]
-)
+
 def open_toast(n):
     if n == 0:
         return dash.no_update
@@ -267,6 +275,7 @@ def open_toast(n):
 current_dir = os.path.dirname(os.path.abspath(__file__))
 db_path = os.path.join(current_dir, 'Phase04.db')
 
+
 def get_user_thresholds_by_rfid(rfid_data):
     conn = sqlite3.connect(db_path, timeout=10)
     cursor = conn.cursor()
@@ -276,16 +285,25 @@ def get_user_thresholds_by_rfid(rfid_data):
     conn.close()
     return user
 
-@callback(
-        Output('bluetooth_devices_count', 'children'),
-        Input('interval-component', 'n_intervals')
-)
 
-def bluetooth_device_count(n):
+def scan_devices():
     global devices_nearby
-    bluetooth_devices_nearby = bluetooth.discover_devices()
-    devices_nearby = bluetooth_devices_nearby
-    return f"Bluetooth Devices: {len(devices_nearby)}"
+    while True:
+        nearby_devices = bluetooth.discover_devices(duration=2, lookup_names=False, lookup_class=True)
+        devices_nearby = len(nearby_devices)
+
+
+scan_thread = Thread(target=scan_devices)
+scan_thread.daemon = True
+scan_thread.start()
+
+
+@app.callback(
+    Output('device_count', 'children'),
+    [Input('interval-component', 'n_intervals')])
+def update_device_count(n):
+    return f"Bluetooth devices nearby: {devices_nearby}"
+
 
 @app.callback(
     [
@@ -305,6 +323,7 @@ def update_profile_values(n):
     else:
         return '', '', 0, 0, 0
 
+
 # Motor
 @callback(
     [Output('humidity-gauge', 'value'),
@@ -315,8 +334,8 @@ def update_gauges(n):
     dht = DHT.DHT(DHTPin)
     while True:
         dht.readDHT11()
-        # print(f'Humidity: {dht.humidity}', f'Temperature: {dht.temperature}')
         return [dht.humidity, dht.temperature]
+
 
 @callback(
     [Output('fan', 'src')],
@@ -340,8 +359,8 @@ def send_email(temperature):
     Input('interval-component', 'n_intervals')
 )
 def update_light_sensor_value(n):
-    # print(MQTT_Sub.get_light_brightness())
     return f"Light Intensity: {MQTT_Sub.get_light_brightness()}%"
+
 
 @callback(
     [Output('led-img', 'src'),
@@ -367,20 +386,22 @@ def update_light_status_and_notify(light_intensity):
             return ["assets/led_on.png", "Light Status: On", "Email regarding light status", True]
         else:
             GPIO.output(LED_PIN, GPIO.HIGH)
-            return ["assets/led_on.png", "Light Status: On",  "Email regarding light status", False]
+            return ["assets/led_on.png", "Light Status: On", "Email regarding light status", False]
     else:
         if is_email_sent:
             print("Email not sent")
             is_email_sent = False
             GPIO.output(LED_PIN, GPIO.LOW)
-            return ["assets/led_off.png", "Light Status: Off",  "Email regarding light status", False]
+            return ["assets/led_off.png", "Light Status: Off", "Email regarding light status", False]
         else:
             GPIO.output(LED_PIN, GPIO.LOW)
-            return ["assets/led_off.png", "Light Status: Off",  "Email regarding light status", False]
+            return ["assets/led_off.png", "Light Status: Off", "Email regarding light status", False]
+
 
 # Run the Dash app
 if __name__ == '__main__':
     app.run(
         host='localhost',
         port=8050,
-        debug=True)
+        debug=True
+    )
