@@ -102,128 +102,130 @@ app.layout = html.Div(
                     id='right-phases',
                     children=[
                         html.Div(
-    id='phase2',
-    children=[
-        html.Div([
-            html.Div(
-                daq.Thermometer(
-                    id='temperature-gauge',
-                    label='Temperature',
-                    labelPosition='top',
-                    showCurrentValue=True,
-                    value=0,
-                    min=-0,
-                    max=40,
-                    style={'width': '300px', 'height': '325px', 'margin-right': '30px',
-                           'margin-left': '10px', 'border': '5px solid lightgrey',
-                           'backgroundColor': 'rgb(129, 133, 137)', 'borderRadius': '10px',
-                           'fontFamily': 'Verdana', 'color': 'white'}
-                ),
-                style={'width': '50%', 'display': 'inline-block'}
-            ),
-            html.Div(
-                daq.Gauge(
-                    color={
-                        "gradient": True,
-                        "ranges": {
-                            "green": [0, 18],
-                            "yellow": [18, 24],
-                            "red": [24, 30]
-                        },
-                        "value": "red"
-                    },
-                    id='humidity-gauge',
-                    showCurrentValue=True,
-                    label="Humidity",
-                    value=0,
-                    min=0,
-                    max=50,
-                    style={'width': '300px', 'height': '325px', 'margin-right': '50px',
-                           'margin-left': '75px', 'border': '5px solid lightgrey',
-                           'backgroundColor': 'rgb(129, 133, 137)', 'borderRadius': '10px',
-                           'fontFamily': 'Verdana', 'color': 'white'},
-                ),
-                style={'width': '50%', 'display': 'inline-block'}
-            )
-        ], style={'display': 'flex', 'justifyContent': 'space-between'}),
-    ],
-    style={'flex': 1, 'padding': '0 20px 20px 20px'}
-),
-html.Div(
-    id='phase3',
-    children=[
-        html.Div(
-            [
-                html.Div(
-                    [
-                        html.Div("Light Control",
-                                 style={'color': 'white', 'textAlign': 'center',
-                                        'font-family': 'Verdana'}),
-                        html.Img(id='led-img',
-                                 src='/assets/led_off.png',
-                                 style={'width': '100px', 'height': '100px',
-                                        'borderRadius': '50%', 'margin-bottom': '20px'}),
-                        html.P('Light Intensity:',
-                               id='light-intensity',
-                               style={'color': 'white', 'textAlign': 'center',
-                                      'font-family': 'Verdana', 'margin-bottom': '20px'}),
-                        html.P('Light Status: Off',
-                               id='light-status',
-                               style={'color': 'white', 'textAlign': 'center',
-                                      'font-family': 'Verdana',
-                                      'margin-bottom': '20px'}),
-                    ],
-                    style={'display': 'inline-block', 'border': '5px solid lightgrey',
-                           'padding': '20px', 'borderRadius': '10px', 'text-align': 'center',
-                           'margin-right': '100px', 'width': '300px', 'height': '250px',
-                           'backgroundColor': 'rgb(129, 133, 137)', 'margin-left': '10px'}
-                ),
+                            id='phase2',
+                            children=[
+                                html.Div([
+                                    html.Div(
+                                        daq.Thermometer(
+                                            id='temperature-gauge',
+                                            label='Temperature',
+                                            labelPosition='top',
+                                            showCurrentValue=True,
+                                            value=0,
+                                            min=-0,
+                                            max=40,
+                                            style={'width': '350px', 'height': '325px', 'margin-right': '30px',
+                                                   'margin-left': '10px', 'border': '5px solid lightgrey',
+                                                   'backgroundColor': 'rgb(129, 133, 137)', 'borderRadius': '10px',
+                                                   'fontFamily': 'Verdana', 'color': 'white'}
+                                        ),
+                                        style={'width': '50%', 'display': 'inline-block'}
+                                    ),
+                                    html.Div(
+                                        daq.Gauge(
+                                            color={
+                                                "gradient": True,
+                                                "ranges": {
+                                                    "green": [0, 18],
+                                                    "yellow": [18, 24],
+                                                    "red": [24, 30]
+                                                },
+                                                "value": "red"
+                                            },
+                                            id='humidity-gauge',
+                                            showCurrentValue=True,
+                                            label="Humidity",
+                                            value=0,
+                                            min=0,
+                                            max=50,
+                                            style={'width': '350px', 'height': '325px', 'margin-right': '50px',
+                                                   'margin-left': '75px', 'border': '5px solid lightgrey',
+                                                   'backgroundColor': 'rgb(129, 133, 137)', 'borderRadius': '10px',
+                                                   'fontFamily': 'Verdana', 'color': 'white'},
+                                        ),
+                                        style={'width': '50%', 'display': 'inline-block'}
+                                    )
+                                ], style={'display': 'flex', 'justifyContent': 'space-between'}),
+                            ],
+                            style={'flex': 1, 'padding': '20px'}
+                        ),
+                        html.Div(
+                            id='phase3',
+                            children=[
+                                html.Div(
+                                    [
+                                        html.Div(
+                                            [
+                                                html.Div("Light Control",
+                                                         style={'color': 'white', 'textAlign': 'center',
+                                                                'font-family': 'Verdana'}),
+                                                html.Img(id='led-img',
+                                                         src='/assets/led_off.png',
+                                                         style={'width': '100px', 'height': '100px',
+                                                                'borderRadius': '50%', 'margin-bottom': '20px'}),
+                                                html.P('Light Intensity:',
+                                                       id='light-intensity',
+                                                       style={'color': 'white', 'textAlign': 'center',
+                                                              'font-family': 'Verdana', 'margin-bottom': '20px'}),
+                                                html.P('Light Status: Off',
+                                                       id='light-status',
+                                                       style={'color': 'white', 'textAlign': 'center',
+                                                              'font-family': 'Verdana',
+                                                              'margin-bottom': '20px'}),
+                                            ],
+                                            style={'display': 'inline-block', 'border': '5px solid lightgrey',
+                                                   'padding': '20px', 'borderRadius': '10px', 'text-align': 'center',
+                                                   'margin-right': '150px', 'width': '350px', 'height': '285px',
+                                                   'backgroundColor': 'rgb(129, 133, 137)', 'margin-left': '5px'}
+                                        ),
 
-                html.Div(
-                    [
-                        html.Div("Fan Control", style={'color': 'white', 'textAlign': 'center',
-                                                      'font-family': 'Verdana'}),
-                        html.Img(id='fan-img',
-                                 src='/assets/fan_off.png',
-                                 style={'width': '100px', 'height': '100px',
-                                        'borderRadius': '50%', 'margin-bottom': '20px'}),
-                        html.P('Fan Status: off', id="fan-status", style={'color': 'white', 'textAlign': 'center',
-                                                                         'font-family': 'Verdana',
-                                                                         'margin-bottom': '20px'}),
-                        html.P('', id="email-sent-fan", style={'color': 'white', 'textAlign': 'center',
-                                                               'font-family': 'Verdana',
-                                                               'margin-bottom': '20px'}),
-                    ],
-                    style={'display': 'inline-block', 'border': '5px solid lightgrey',
-                           'padding': '20px', 'borderRadius': '10px', 'text-align': 'center',
-                           'width': '300px', 'height': '250px',
-                           'backgroundColor': 'rgb(129, 133, 137)', 'margin-right': '100px', 'margin-left': '150px'}
-                ),
-            ],
-            style={'display': 'flex', 'justifyContent': 'center', 'alignItems': 'center'}
-        )
-    ],
-    style={'flex': 1, 'padding': '0 20px 20px 20px'}
-),
+                                        html.Div(
+                                            [
+                                                html.Div("Fan Control", style={'color': 'white', 'textAlign': 'center',
+                                                                              'font-family': 'Verdana'}),
+                                                html.Img(id='fan-img',
+                                                         src='/assets/fan_off.png',
+                                                         style={'width': '100px', 'height': '100px',
+                                                                'borderRadius': '50%', 'margin-bottom': '20px'}),
+                                                html.P('Fan Status: off', id="fan-status", style={'color': 'white', 'textAlign': 'center',
+                                                                             'font-family': 'Verdana',
+                                                                             'margin-bottom': '20px'}),
+                                                html.P('', id="email-sent-fan", style={'color': 'white', 'textAlign': 'center',
+                                                                             'font-family': 'Verdana',
+                                                                             'margin-bottom': '20px'}),
+                                            ],
+                                            style={'display': 'inline-block', 'border': '5px solid lightgrey',
+                                                   'padding': '20px', 'borderRadius': '10px', 'text-align': 'center',
+                                                   'width': '350px', 'height': '285px',
+                                                   'backgroundColor': 'rgb(129, 133, 137)', 'margin-right': '5px'}
+                                        ),
+                                    ],
+                                    style={'display': 'flex', 'justifyContent': 'center', 'alignItems': 'center'}
+                                )
 
-                         html.Div(
-                             id='phase4',
-                             children=[
-                                 html.Div([
-                                     html.Div(id="device_count",
-                                              style={'color': 'white', 'textAlign': 'center', 'font-family': "Verdana",
-                                                     'margin-top': '20px', 'backgroundColor': 'rgb(29, 119, 242)',
-                                                     'width': '300px', 'height': '40px', 'lineHeight': '40px',
-                                                     'borderRadius': '10px'}),
-                                      dcc.Interval(
-                                          id="interval-component",
-                                          interval=2000,
-                                          n_intervals=0
-                                      )
-                                 ], style={'display': 'flex', 'alignItems': 'center'}),
-                             ],
-                             style={'flex': 1, 'padding': '20px'}
-                         )
+                            ],
+                            style={'flex': 1, 'padding': '20px'}
+                        ),
+                        # html.Div(
+                        #     id='phase4',
+                        #     children=[
+                        #         html.Img(src='/assets/bluetooth_png.png',
+                        #                  style={'width': '100px', 'height': '35px', 'marginLeft': '10px'}),
+                        #         html.Div([
+                        #             html.Div(id="device_count",
+                        #                      style={'color': 'white', 'textAlign': 'center', 'font-family': "Verdana",
+                        #                             'margin-top': '20px', 'backgroundColor': 'rgb(29, 119, 242)',
+                        #                             'width': '300px', 'height': '40px', 'lineHeight': '40px',
+                        #                             'borderRadius': '10px'}),
+                        #              dcc.Interval(
+                        #                  id="interval-component",
+                        #                  interval=2000,
+                        #                  n_intervals=0
+                        #              )
+                        #         ], style={'display': 'flex', 'alignItems': 'center'}),
+                        #     ],
+                        #     style={'flex': 1, 'padding': '20px'}
+                        # )
 
                     ],
                     style={'display': 'flex', 'flexDirection': 'column', 'flex': 1}
