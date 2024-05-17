@@ -15,6 +15,7 @@ from time import sleep
 from threading import Thread
 from dash import State
 import db_write as db
+import motor as motor
 
 # Setup start
 GPIO.setmode(GPIO.BOARD)
@@ -189,6 +190,9 @@ app.layout = html.Div(
                                                 html.P('Fan Status: off', id="fan-status", style={'color': 'white', 'textAlign': 'center',
                                                                              'font-family': 'Verdana',
                                                                              'margin-bottom': '20px'}),
+                                                html.P('', id="email-sent-fan", style={'color': 'white', 'textAlign': 'center',
+                                                                             'font-family': 'Verdana',
+                                                                             'margin-bottom': '20px'}),
                                             ],
                                             style={'display': 'inline-block', 'border': '5px solid lightgrey',
                                                    'padding': '20px', 'borderRadius': '10px', 'text-align': 'center',
@@ -352,7 +356,8 @@ def update_gauges(n):
 
 @callback(
     [Output('fan-img', 'src'),
-     Output('fan-status', 'children')],
+     Output('fan-status', 'children'),
+     Output('email-sent-fan', 'children')],
     [Input('temp-threshold', 'value'),
     Input('temperature-gauge', 'value')]
 )
@@ -360,14 +365,19 @@ def send_email(temp_threshold, temperature):
     global current_rfid
     if current_rfid is not None:
         send_response = Email.send_email_fan(temp_threshold, temperature)
+        if send_response == "Email sent successfully":
+            return ['assets/fan_off.png', "Fan Status: off", "Email sent"]
         print(send_response)
 
     receive_response = Email.receive_email_fan()
     print(receive_response)
 
     if not receive_response or ('Error' in str(receive_response)):
-        return ['assets/fan_off.png', "Fan Status: off"]
-    return ['assets/fan_on.png', "Fan Status: on"]
+        motor.motor_off(Motor1)
+        return ['assets/fan_off.png', "Fan Status: off", ""]
+    else:
+        motor.motor_on(Motor1, Motor2, Motor3)
+        return ['assets/fan_on.png', "Fan Status: on", ""]
 
 
 # Photoresistor
