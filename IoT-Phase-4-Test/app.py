@@ -186,7 +186,7 @@ app.layout = html.Div(
                                                          src='/assets/fan_off.png',
                                                          style={'width': '100px', 'height': '100px',
                                                                 'borderRadius': '50%', 'margin-bottom': '20px'}),
-                                                html.P('Fan Status:', style={'color': 'white', 'textAlign': 'center',
+                                                html.P('Fan Status: off', id="fan-status", style={'color': 'white', 'textAlign': 'center',
                                                                              'font-family': 'Verdana',
                                                                              'margin-bottom': '20px'}),
                                             ],
@@ -202,26 +202,26 @@ app.layout = html.Div(
                             ],
                             style={'flex': 1, 'padding': '20px'}
                         ),
-                        html.Div(
-                            id='phase4',
-                            children=[
-                                html.Img(src='/assets/bluetooth_png.png',
-                                         style={'width': '100px', 'height': '35px', 'marginLeft': '10px'}),
-                                html.Div([
-                                    html.Div(id="device_count",
-                                             style={'color': 'white', 'textAlign': 'center', 'font-family': "Verdana",
-                                                    'margin-top': '20px', 'backgroundColor': 'rgb(29, 119, 242)',
-                                                    'width': '300px', 'height': '40px', 'lineHeight': '40px',
-                                                    'borderRadius': '10px'}),
-                                    dcc.Interval(
-                                        id="interval-component",
-                                        interval=2000,
-                                        n_intervals=0
-                                    )
-                                ], style={'display': 'flex', 'alignItems': 'center'}),
-                            ],
-                            style={'flex': 1, 'padding': '20px'}
-                        )
+                        # html.Div(
+                        #     id='phase4',
+                        #     children=[
+                        #         html.Img(src='/assets/bluetooth_png.png',
+                        #                  style={'width': '100px', 'height': '35px', 'marginLeft': '10px'}),
+                        #         html.Div([
+                        #             html.Div(id="device_count",
+                        #                      style={'color': 'white', 'textAlign': 'center', 'font-family': "Verdana",
+                        #                             'margin-top': '20px', 'backgroundColor': 'rgb(29, 119, 242)',
+                        #                             'width': '300px', 'height': '40px', 'lineHeight': '40px',
+                        #                             'borderRadius': '10px'}),
+                        #              dcc.Interval(
+                        #                  id="interval-component",
+                        #                  interval=2000,
+                        #                  n_intervals=0
+                        #              )
+                        #         ], style={'display': 'flex', 'alignItems': 'center'}),
+                        #     ],
+                        #     style={'flex': 1, 'padding': '20px'}
+                        # )
 
                     ],
                     style={'display': 'flex', 'flexDirection': 'column', 'flex': 1}
@@ -243,6 +243,11 @@ app.layout = html.Div(
         dcc.Interval(
             id='interval-component',
             interval=4000,  # Update every 2 seconds
+            n_intervals=0
+        ),
+        dcc.Interval(
+            id='interval-temp',
+            interval=2000,  # Update every 2 seconds
             n_intervals=0
         ),
     ],
@@ -299,20 +304,20 @@ current_rfid = None
      Output('temp-threshold', 'value'),
      Output('humidity-threshold', 'value'),
      Output('light-intensity-threshold', 'value')],
-    [Input('interval-component', 'n_intervals')],
+    [Input('interval-component', 'n_intervals')]
 )
-def update_profile(n_intervals):
+def update_profile(n):
     global current_rfid
-    rfid_data, _ = db.get_user_by_rfid()  # Correctly call the function
-    if rfid_data and rfid_data != current_rfid:  # Check if the scanned RFID is different from the current one
-        current_rfid = rfid_data  # Update the current RFID
+    rfid_data, _ = db.get_user_by_rfid()
+    if rfid_data and rfid_data != current_rfid:
+        current_rfid = rfid_data
         user = db.get_user_thresholds_by_rfid(rfid_data)
         if user:
+            Email.send_email_login(user[2])
             return user[2], user[3], user[4], user[5]
-    return dash.no_update, dash.no_update, dash.no_update, dash.no_update  # Return no_update to prevent updating the textboxes
+    return dash.no_update, dash.no_update, dash.no_update, dash.no_update
 
 @app.callback(
-    Output('output', 'children'),
     Input('submit-button', 'n_clicks'),
     State('name', 'value'),
     State('temp-threshold', 'value'),
@@ -335,29 +340,34 @@ def submit_form(n_clicks, name, temp_threshold, humidity_threshold, light_intens
 @callback(
     [Output('humidity-gauge', 'value'),
      Output('temperature-gauge', 'value')],
-    [Input('interval-component', 'n_intervals')],
+    [Input('interval-temp', 'n_intervals')],
 )
 def update_gauges(n):
     dht = DHT.DHT(DHTPin)
     while True:
         dht.readDHT11()
+        print(dht.temperature)
         return [dht.humidity, dht.temperature]
 
 
 @callback(
-    [Output('fan', 'src')],
-    [Input('temperature-gauge', 'value')]
+    [Output('fan-img', 'src'),
+     Output('fan-status', 'children')],
+    [Input('temp-threshold', 'value'),
+    Input('temperature-gauge', 'value')]
 )
-def send_email(temperature):
-    send_response = Email.send_email_fan(temperature)
-    print(send_response)
+def send_email(temp_threshold, temperature):
+    global current_rfid
+    if current_rfid is not None:
+        send_response = Email.send_email_fan(temp_threshold, temperature)
+        print(send_response)
 
     receive_response = Email.receive_email_fan()
     print(receive_response)
 
     if not receive_response or ('Error' in str(receive_response)):
-        return ['assets/fan off.png']
-    return ['assets/fan on.png']
+        return ['assets/fan_off.png', "Fan Status: off"]
+    return ['assets/fan_on.png', "Fan Status: on"]
 
 
 # Photoresistor
@@ -366,7 +376,7 @@ def send_email(temperature):
     Input('interval-component', 'n_intervals')
 )
 def update_light_sensor_value(n):
-    return f"Light Intensity: {MQTT_Sub.get_light_brightness()}%"
+    return f"Light Intensity: {MQTT_Sub.get_light_brightness()}"
 
 
 @callback(
@@ -374,18 +384,21 @@ def update_light_sensor_value(n):
      Output('light-status', 'children'),
      Output('email-toast', 'children'),
      Output('email-toast', 'is_open')],
-    Input('light-intensity', 'children')
+    [Input('light-intensity-threshold', 'value'),
+    Input('light-intensity', 'children')]
 )
-def update_light_status_and_notify(light_intensity):
-    global is_email_sent
+def update_light_status_and_notify(light_intensity_threshold, light_intensity):
+    global is_email_sent, current_rfid
     # Get number in string with regex
     match = re.search(r'\d+', light_intensity)
     # Convert to Int
     light_intensity = int(match.group())
-    print(int(match.group()))
+    print(light_intensity_threshold > light_intensity)
+    print("light_intensity")
 
-    if light_intensity < 40:
+    if light_intensity_threshold > light_intensity and current_rfid is not None:
         if not is_email_sent:
+            print("Sending email light")
             Email.send_email_light()
             print("Email sent")
             is_email_sent = True
@@ -404,11 +417,10 @@ def update_light_status_and_notify(light_intensity):
             GPIO.output(LED_PIN, GPIO.LOW)
             return ["assets/led_off.png", "Light Status: Off", "Email regarding light status", False]
 
-
 # Run the Dash app
 if __name__ == '__main__':
     app.run(
-        host='localhost',
+        host='192.168.156.68',
         port=8050,
         debug=True
     )

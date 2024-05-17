@@ -8,14 +8,14 @@ const char* ssid = "SM-A505W7965";
 const char* password = "angu5588";
 
 // MQTT broker details
-const char* mqtt_server = "192.168.25.68";
+const char* mqtt_server = "192.168.213.68";
 const int mqtt_port = 1883;
 
 WiFiClient espClient;
 PubSubClient client(espClient);
 
 // MQTT topics
-const char* lightsensor_topic = "photoresistor/data";
+const char* lightsensor_topic = "light-sensor/brightness";
 const char* led_status_topic = "led/status";
 const char* rfid_topic = "rfid/data";
 

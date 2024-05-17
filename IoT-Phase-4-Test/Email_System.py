@@ -32,7 +32,7 @@ password = "kbzx epve kvim erhm"
 emailStatus = False
 receiveStatus = False
 
-def send_email_fan(temperature):
+def send_email_fan(temp_threshold, temperature):
     global sender, password, recipient, subject, emailStatus
     msg = MIMEMultipart()
     msg['From'] = sender
@@ -44,7 +44,7 @@ def send_email_fan(temperature):
     try:
         if emailStatus:
             return emailStatus
-        elif temperature > 30 and not emailStatus:
+        elif temp_threshold < temperature and not emailStatus:
             server = smtplib.SMTP('smtp.gmail.com', 587)
             server.starttls()
             server.login(sender, password)
@@ -118,4 +118,22 @@ def extract_body_from_email(email_message):
         body = email_message.get_payload(decode=True).decode('utf-8', 'ignore')
 
     return body
+
+def send_email_login(username):
+    current_time = datetime.now().strftime("%H:%M")
+
+    subject = "User logged in"
+    body = f"User {username} entered at this time"
+    sender = "arshsinghalt@gmail.com"
+    recipients = ["arshmain24@gmail.com"]
+    password = "kbzx epve kvim erhm"
+
+    msg = MIMEText(body)
+    msg['Subject'] = subject
+    msg['From'] = sender
+    msg['To'] = ', '.join(recipients)
+    with smtplib.SMTP_SSL('smtp.gmail.com', 465) as smtp_server:
+        smtp_server.login(sender, password)
+        smtp_server.sendmail(sender, recipients, msg.as_string())
+    print("Message sent!")
 
