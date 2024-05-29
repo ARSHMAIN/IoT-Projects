@@ -139,6 +139,7 @@ def update_mqtt_data(n, logged_in_user):
             last_email_time = datetime.now()
             return f"assets/{mqtt_sub.get_led_status()}.jpg", light_value, "Email Sent", light_value, {'textAlign': 'center', 'color': 'green', 'font-size': '18px', 'font-weight': 'bold', 'display': 'block'}
     light_value = int(mqtt_sub.get_light_brightness())
+    print(f"Light: {light_value}")
     email_status = email_message(light_value)
     
     if logged_in_user:
@@ -165,6 +166,8 @@ def update_mqtt_data(n, logged_in_user):
     State('password-input', 'value')
 )
 def login(n_clicks, selected_user, password):
+    print(selected_user)
+    print(password)
     if n_clicks > 0:
         if selected_user and password == selected_user:
             return dashboard_layout, ''
@@ -174,4 +177,4 @@ def login(n_clicks, selected_user, password):
         return '', ''
 
 if __name__ == '__main__':
-    app.run_server(debug=True)
+    app.run(host='192.168.51.68', port=8050, debug=True)

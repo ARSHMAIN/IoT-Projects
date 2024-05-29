@@ -1,6 +1,6 @@
+# noinspection PyUnresolvedReferences
 from dash import Dash, html, Input, Output, callback
 import dash_daq as daq
-# noinspection PyUnresolvedReferences
 import RPi.GPIO as GPIO
 
 app = Dash(__name__)

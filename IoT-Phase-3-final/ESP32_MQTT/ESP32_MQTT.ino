@@ -2,11 +2,11 @@
 #include <PubSubClient.h>
 
 // WiFi credentials
-const char* ssid = "";
-const char* password = "";
+const char* ssid = "SM-A505W7965";
+const char* password = "angu5588";
 
 // MQTT broker details
-const char* mqtt_server = "192.168.33.68";
+const char* mqtt_server = "192.168.51.68";
 const int mqtt_port = 1883; 
 
 WiFiClient espClient;

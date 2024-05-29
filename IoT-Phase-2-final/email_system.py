@@ -10,7 +10,7 @@ recipient = "arshmain24@gmail.com"
 password = "kbzx epve kvim erhm"
 emailStatus = False
 receiveStatus = False
-json_file_path = "/home/arsh/Documents/IoT-Projects/IoT-Phase-2/current_date.json"
+json_file_path = "/home/arsh/Documents/IoT-Projects/IoT-Phase-2-final/current_date.json"
 
 def send_email(temperature):
     global sender, password, recipient, subject, emailStatus, json_file_path

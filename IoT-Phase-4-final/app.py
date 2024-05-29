@@ -91,8 +91,9 @@ app.layout = html.Div(
                             style={'width': '100%', 'margin-top': '20px', 'height': '50px',
                                    'backgroundColor': 'rgb(29, 119, 242)', 'color': 'white',
                                    'borderRadius': '10px', 'fontFamily': 'Verdana'}),
+                html.Label('', id='email-sent-logged-in', style={'padding-top': '20px', 'font-size': '30px'})
             ],
-            style={'flex': 1, 'width': '200%', 'borderRadius': '10px', 'padding': '20px', 'textAlign': 'center', }
+            style={'flex': 1, 'width': '200%', 'borderRadius': '10px', 'padding': '20px', 'textAlign': 'center', 'font-family': 'Verdana'}
         ),
 
         html.Div(
@@ -307,19 +308,21 @@ current_rfid = None
     [Output('name', 'value'),
      Output('temp-threshold', 'value'),
      Output('humidity-threshold', 'value'),
-     Output('light-intensity-threshold', 'value')],
+     Output('light-intensity-threshold', 'value'),
+     Output('email-sent-logged-in', 'children')],
     [Input('interval-component', 'n_intervals')]
 )
 def update_profile(n):
-    global current_rfid
+    global current_rfid, is_email_sent
     rfid_data, _ = db.get_user_by_rfid()
     if rfid_data and rfid_data != current_rfid:
         current_rfid = rfid_data
         user = db.get_user_thresholds_by_rfid(rfid_data)
         if user:
+            is_email_sent = False
             Email.send_email_login(user[2])
-            return user[2], user[3], user[4], user[5]
-    return dash.no_update, dash.no_update, dash.no_update, dash.no_update
+            return user[2], user[3], user[4], user[5], 'Logged in successfully email sent'
+    return dash.no_update, dash.no_update, dash.no_update, dash.no_update, ''
 
 @app.callback(
     Input('submit-button', 'n_clicks'),
@@ -365,9 +368,10 @@ def send_email(temp_threshold, temperature):
     global current_rfid
     if current_rfid is not None:
         send_response = Email.send_email_fan(temp_threshold, temperature)
-        if send_response == "Email sent successfully":
-            return ['assets/fan_off.png', "Fan Status: off", "Email sent"]
         print(send_response)
+        if send_response == "Email sent successfully":
+            print("vcscsccscs ccscs")
+            return ['assets/fan_off.png', "Fan Status: off", "Email sent"]
 
     receive_response = Email.receive_email_fan()
     print(receive_response)
@@ -430,7 +434,7 @@ def update_light_status_and_notify(light_intensity_threshold, light_intensity):
 # Run the Dash app
 if __name__ == '__main__':
     app.run(
-        host='192.168.156.68',
+        host='192.168.51.68',
         port=8050,
         debug=True
     )

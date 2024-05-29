@@ -6,7 +6,7 @@ const char* ssid = "";
 const char* password = "";
 
 // MQTT broker details
-const char* mqtt_server = "192.168.33.68";
+const char* mqtt_server = "";
 const int mqtt_port = 1883; 
 
 WiFiClient espClient;

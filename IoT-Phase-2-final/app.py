@@ -94,7 +94,7 @@ def send_email(temperature):
     return ['assets/fan on.png']
 
 if __name__ == '__main__':
-    app.run(host='192.168.33.68', port=8050, debug=True)
+    app.run(host='192.168.137.68', port=8050, debug=True)
     MotorEnable = 36  # Enable Pin GPIO 16
     MotorInput2 = 38  # Input Pinn GPIO 20
     MotorInput3 = 40  # Input Pinn GPIO 21
